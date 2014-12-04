@@ -93,6 +93,10 @@ public class LocatorsResource {
     private static Supplier<ReadableByteChannel> sourceChannelSupplier(
         final ServletRequest servletRequest) {
 
+        if (servletRequest == null) {
+            throw new NullPointerException("null servletRequest");
+        }
+
         return () -> {
             try {
                 return Channels.newChannel(servletRequest.getInputStream());
@@ -106,6 +110,14 @@ public class LocatorsResource {
     private static void sourceChannelSupplier(
         final FileContext fileContext, final ServletRequest servletRequest) {
 
+        if (fileContext == null) {
+            throw new NullPointerException("null fileContext");
+        }
+
+        if (servletRequest == null) {
+            throw new NullPointerException("null servletRequest");
+        }
+
         fileContext.sourceChannelSupplier(
             sourceChannelSupplier(servletRequest));
     }
@@ -113,6 +125,10 @@ public class LocatorsResource {
 
     private static Supplier<WritableByteChannel> targetChannelSupplier(
         final ServletResponse servletResponse) {
+
+        if (servletResponse == null) {
+            throw new NullPointerException("null servletResponse");
+        }
 
         return () -> {
             try {
@@ -142,7 +158,7 @@ public class LocatorsResource {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @GET
     @Path("/{locator: .+}")
-    public StreamingOutput readSingle(
+    public StreamingOutput readByLocator(
         @PathParam("locator") final String locator) {
 
         final FileContext fileContext = new DefaultFileContext();
@@ -192,7 +208,8 @@ public class LocatorsResource {
     @PUT
     @Path("/{locator: .+}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response updateSingle(@PathParam("locator") final String locator) {
+    public Response updateByLocator(
+        @PathParam("locator") final String locator) {
 
         final FileContext fileContext = new DefaultFileContext();
 
