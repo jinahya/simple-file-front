@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.jinahya.simple.file.font;
+
+
+package com.github.jinahya.simple.file.front;
+
+
+import javax.ws.rs.core.Application;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.test.JerseyTestNg.ContainerPerClassTest;
 
 
 /**
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-public final class FileFrontConstants {
+public class LocatorsResourceTest extends ContainerPerClassTest {
 
 
-    public static final String HEADER_PATH_NAME = "File-Front-Path-Name";
+    @Override
+    protected Application configure() {
 
-
-    private FileFrontConstants() {
-
-        super();
+        return new ResourceConfig(LocatorsResource.class);
     }
 
 

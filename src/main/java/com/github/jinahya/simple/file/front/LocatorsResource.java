@@ -15,7 +15,7 @@
  */
 
 
-package com.github.jinahya.simple.file.font;
+package com.github.jinahya.simple.file.front;
 
 
 import com.github.jinahya.simple.file.back.DefaultFileContext;
@@ -79,17 +79,33 @@ public class LocatorsResource {
     }
 
 
-    private static void keyBufferSupplier(final FileContext fileContext,
-                                          final String keyString) {
+    /**
+     *
+     * @param fileContext
+     * @param keyString
+     *
+     * @return
+     *
+     * @see #keyBufferSupplier(java.lang.String)
+     * @see FileContext#keyBufferSupplier(java.util.function.Supplier)
+     */
+    private static Supplier<ByteBuffer> keyBufferSupplier(
+        final FileContext fileContext, final String keyString) {
 
         if (fileContext == null) {
             throw new NullPointerException("null fileContext");
         }
 
-        fileContext.keyBufferSupplier(keyBufferSupplier(keyString));
+        return fileContext.keyBufferSupplier(keyBufferSupplier(keyString));
     }
 
 
+    /**
+     *
+     * @param servletRequest
+     *
+     * @return
+     */
     private static Supplier<ReadableByteChannel> sourceChannelSupplier(
         final ServletRequest servletRequest) {
 
@@ -107,18 +123,24 @@ public class LocatorsResource {
     }
 
 
-    private static void sourceChannelSupplier(
+    /**
+     *
+     * @param fileContext
+     * @param servletRequest
+     *
+     * @return
+     *
+     * @see #sourceChannelSupplier(javax.servlet.ServletRequest)
+     * @see FileContext#sourceChannelSupplier(java.util.function.Supplier)
+     */
+    private static Supplier<ReadableByteChannel> sourceChannelSupplier(
         final FileContext fileContext, final ServletRequest servletRequest) {
 
         if (fileContext == null) {
             throw new NullPointerException("null fileContext");
         }
 
-        if (servletRequest == null) {
-            throw new NullPointerException("null servletRequest");
-        }
-
-        fileContext.sourceChannelSupplier(
+        return fileContext.sourceChannelSupplier(
             sourceChannelSupplier(servletRequest));
     }
 
@@ -140,10 +162,24 @@ public class LocatorsResource {
     }
 
 
-    private static void targetChannelSupplier(
+    /**
+     *
+     * @param fileContext
+     * @param servletResponse
+     *
+     * @return
+     *
+     * @see #targetChannelSupplier(javax.servlet.ServletResponse)
+     * @see FileContext#targetChannelSupplier(java.util.function.Supplier)
+     */
+    private static Supplier<WritableByteChannel> targetChannelSupplier(
         final FileContext fileContext, final ServletResponse servletResponse) {
 
-        fileContext.targetChannelSupplier(
+        if (fileContext == null) {
+            throw new NullPointerException("null fileContext");
+        }
+
+        return fileContext.targetChannelSupplier(
             targetChannelSupplier(servletResponse));
     }
 
@@ -158,7 +194,7 @@ public class LocatorsResource {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @GET
     @Path("/{locator: .+}")
-    public StreamingOutput readByLocator(
+    public StreamingOutput readSingle(
         @PathParam("locator") final String locator) {
 
         final FileContext fileContext = new DefaultFileContext();
@@ -167,7 +203,7 @@ public class LocatorsResource {
 
         final Mutable<java.nio.file.Path> localPathHolder
             = new MutableObject<>();
-        fileContext.localPathConsumer((localPath) -> {
+        fileContext.localPathConsumer(localPath -> {
             localPathHolder.setValue(localPath);
             servletResponse.setStatus(
                 Files.isRegularFile(localPath)
@@ -175,20 +211,22 @@ public class LocatorsResource {
         });
 
         final Mutable<String> pathNameHolder = new MutableObject<>();
-        fileContext.pathNameConsumer((pathName) -> {
+        fileContext.pathNameConsumer(pathName -> {
             servletResponse.setHeader(
                 FileFrontConstants.HEADER_PATH_NAME, pathName);
             pathNameHolder.setValue(pathName);
         });
 
         final MutableLong bytesCopiedHolder = new MutableLong();
-        fileContext.bytesCopiedConsumer((bytesCopied) -> {
+        fileContext.bytesCopiedConsumer(bytesCopied -> {
             bytesCopiedHolder.setValue(bytesCopied);
+            servletResponse.setHeader(
+                FileFrontConstants.HEADER_BYTES_COPIED,
+                Long.toString(bytesCopied));
         });
 
-        return (targetStream) -> {
-            fileContext.targetChannelSupplier(
-                () -> Channels.newChannel(targetStream));
+        return targetStream -> {
+            fileContext.targetChannel(targetStream);
             try {
                 fileBack.read(fileContext);
             } catch (final FileBackException fbe) {
@@ -208,7 +246,7 @@ public class LocatorsResource {
     @PUT
     @Path("/{locator: .+}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response updateByLocator(
+    public Response updateSingle(
         @PathParam("locator") final String locator) {
 
         final FileContext fileContext = new DefaultFileContext();
@@ -217,39 +255,31 @@ public class LocatorsResource {
 
         final Mutable<java.nio.file.Path> localPathHolder
             = new MutableObject<>();
-        fileContext.localPathConsumer((localPath) -> {
+        fileContext.localPathConsumer(localPath -> {
             localPathHolder.setValue(localPath);
-            servletResponse.setStatus(
-                Files.isRegularFile(localPath)
-                ? HttpServletResponse.SC_OK : HttpServletResponse.SC_CREATED);
+//            servletResponse.setStatus(
+//                Files.isRegularFile(localPath)
+//                ? HttpServletResponse.SC_OK : HttpServletResponse.SC_CREATED);
         });
 
         final Mutable<String> pathNameHolder = new MutableObject<>();
-        fileContext.pathNameConsumer((pathName) -> {
+        fileContext.pathNameConsumer(pathName -> {
+            pathNameHolder.setValue(pathName);
             servletResponse.setHeader(
                 FileFrontConstants.HEADER_PATH_NAME, pathName);
-            pathNameHolder.setValue(pathName);
         });
 
-        fileContext.sourceChannelSupplier(
-            () -> {
-                try {
-                    return Channels.newChannel(
-                        servletRequest.getInputStream());
-                } catch (final IOException ioe) {
-                    throw new RuntimeException(ioe);
-                }
-            });
+        sourceChannelSupplier(fileContext, servletRequest);
 
         final MutableLong bytesCopiedHolder = new MutableLong();
         fileContext.bytesCopiedConsumer(
-            (bytesCopied) -> bytesCopiedHolder.setValue(bytesCopied)
+            bytesCopied -> bytesCopiedHolder.setValue(bytesCopied)
         );
 
         try {
-            fileBack.update(fileContext);
+            fileBack.write(fileContext);
         } catch (final IOException | FileBackException e) {
-            throw new WebApplicationException(e);
+            throw new WebApplicationException(e); // 500
         }
 
         return Response.noContent().build();
