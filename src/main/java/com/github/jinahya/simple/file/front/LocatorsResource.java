@@ -23,7 +23,9 @@ import com.github.jinahya.simple.file.back.FileBack;
 import com.github.jinahya.simple.file.back.FileBackException;
 import com.github.jinahya.simple.file.back.FileContext;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -71,7 +73,8 @@ public class LocatorsResource {
 
         final FileContext fileContext = new DefaultFileContext();
 
-        fileContext.keyBufferSupplier(locator);
+        fileContext.keyBufferSupplier(
+            () -> ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8)));
 
         final Mutable<java.nio.file.Path> localPathHolder
             = new MutableObject<>();
@@ -124,7 +127,8 @@ public class LocatorsResource {
 
         final FileContext fileContext = new DefaultFileContext();
 
-        fileContext.keyBufferSupplier(locator);
+        fileContext.keyBufferSupplier(
+            () -> ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8)));
 
         final Mutable<java.nio.file.Path> localPathHolder
             = new MutableObject<>();
@@ -142,7 +146,13 @@ public class LocatorsResource {
                 FileFrontConstants.HEADER_PATH_NAME, pathName);
         });
 
-        fileContext.sourceChannelSupplier(servletRequest);
+        fileContext.sourceChannelSupplier(() -> {
+            try {
+                return Channels.newChannel(servletRequest.getInputStream());
+            } catch (final IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+        });
 
         final MutableLong bytesCopiedHolder = new MutableLong();
         fileContext.bytesCopiedConsumer(
@@ -165,7 +175,8 @@ public class LocatorsResource {
 
         final FileContext fileContext = new DefaultFileContext();
 
-        fileContext.keyBufferSupplier(locator);
+        fileContext.keyBufferSupplier(
+            () -> ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8)));
 
         try {
             fileBack.delete(fileContext);
@@ -181,19 +192,19 @@ public class LocatorsResource {
 
 
     @Inject
-    private FileBack fileBack;
+    protected FileBack fileBack;
 
 
     @Context
-    private HttpServletRequest servletRequest;
+    protected HttpServletRequest servletRequest;
 
 
     @Context
-    private HttpServletResponse servletResponse;
+    protected HttpServletResponse servletResponse;
 
 
     @Context
-    private UriInfo uriInfo;
+    protected UriInfo uriInfo;
 
 
 }
