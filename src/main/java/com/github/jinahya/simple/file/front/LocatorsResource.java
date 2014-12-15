@@ -23,16 +23,9 @@ import com.github.jinahya.simple.file.back.FileBack;
 import com.github.jinahya.simple.file.back.FileBackException;
 import com.github.jinahya.simple.file.back.FileContext;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.function.Supplier;
 import javax.inject.Inject;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -63,127 +56,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class LocatorsResource {
 
 
-    private static Supplier<ByteBuffer> keyBufferSupplier(
-        final String keyString) {
-
-        if (keyString == null) {
-            throw new NullPointerException("null keyString");
-        }
-
-        if (keyString.isEmpty()) {
-            throw new IllegalArgumentException("empty keyString");
-        }
-
-        return () -> ByteBuffer.wrap(
-            keyString.getBytes(StandardCharsets.UTF_8));
-    }
-
-
-    /**
-     *
-     * @param fileContext
-     * @param keyString
-     *
-     * @return
-     *
-     * @see #keyBufferSupplier(java.lang.String)
-     * @see FileContext#keyBufferSupplier(java.util.function.Supplier)
-     */
-    private static Supplier<ByteBuffer> keyBufferSupplier(
-        final FileContext fileContext, final String keyString) {
-
-        if (fileContext == null) {
-            throw new NullPointerException("null fileContext");
-        }
-
-        return fileContext.keyBufferSupplier(keyBufferSupplier(keyString));
-    }
-
-
-    /**
-     *
-     * @param servletRequest
-     *
-     * @return
-     */
-    private static Supplier<ReadableByteChannel> sourceChannelSupplier(
-        final ServletRequest servletRequest) {
-
-        if (servletRequest == null) {
-            throw new NullPointerException("null servletRequest");
-        }
-
-        return () -> {
-            try {
-                return Channels.newChannel(servletRequest.getInputStream());
-            } catch (final IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
-        };
-    }
-
-
-    /**
-     *
-     * @param fileContext
-     * @param servletRequest
-     *
-     * @return
-     *
-     * @see #sourceChannelSupplier(javax.servlet.ServletRequest)
-     * @see FileContext#sourceChannelSupplier(java.util.function.Supplier)
-     */
-    private static Supplier<ReadableByteChannel> sourceChannelSupplier(
-        final FileContext fileContext, final ServletRequest servletRequest) {
-
-        if (fileContext == null) {
-            throw new NullPointerException("null fileContext");
-        }
-
-        return fileContext.sourceChannelSupplier(
-            sourceChannelSupplier(servletRequest));
-    }
-
-
-    private static Supplier<WritableByteChannel> targetChannelSupplier(
-        final ServletResponse servletResponse) {
-
-        if (servletResponse == null) {
-            throw new NullPointerException("null servletResponse");
-        }
-
-        return () -> {
-            try {
-                return Channels.newChannel(servletResponse.getOutputStream());
-            } catch (final IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
-        };
-    }
-
-
-    /**
-     *
-     * @param fileContext
-     * @param servletResponse
-     *
-     * @return
-     *
-     * @see #targetChannelSupplier(javax.servlet.ServletResponse)
-     * @see FileContext#targetChannelSupplier(java.util.function.Supplier)
-     */
-    private static Supplier<WritableByteChannel> targetChannelSupplier(
-        final FileContext fileContext, final ServletResponse servletResponse) {
-
-        if (fileContext == null) {
-            throw new NullPointerException("null fileContext");
-        }
-
-        return fileContext.targetChannelSupplier(
-            targetChannelSupplier(servletResponse));
-    }
-
-
     /**
      * Reads file content mapped to specified {@code locator}.
      *
@@ -199,7 +71,7 @@ public class LocatorsResource {
 
         final FileContext fileContext = new DefaultFileContext();
 
-        fileContext.keyBufferSupplier(keyBufferSupplier(locator));
+        fileContext.keyBufferSupplier(locator);
 
         final Mutable<java.nio.file.Path> localPathHolder
             = new MutableObject<>();
@@ -226,7 +98,8 @@ public class LocatorsResource {
         });
 
         return targetStream -> {
-            fileContext.targetChannel(targetStream);
+            fileContext.targetChannelSupplier(
+                () -> Channels.newChannel(targetStream));
             try {
                 fileBack.read(fileContext);
             } catch (final FileBackException fbe) {
@@ -251,7 +124,7 @@ public class LocatorsResource {
 
         final FileContext fileContext = new DefaultFileContext();
 
-        fileContext.keyBufferSupplier(keyBufferSupplier(locator));
+        fileContext.keyBufferSupplier(locator);
 
         final Mutable<java.nio.file.Path> localPathHolder
             = new MutableObject<>();
@@ -269,7 +142,7 @@ public class LocatorsResource {
                 FileFrontConstants.HEADER_PATH_NAME, pathName);
         });
 
-        sourceChannelSupplier(fileContext, servletRequest);
+        fileContext.sourceChannelSupplier(servletRequest);
 
         final MutableLong bytesCopiedHolder = new MutableLong();
         fileContext.bytesCopiedConsumer(
@@ -292,7 +165,7 @@ public class LocatorsResource {
 
         final FileContext fileContext = new DefaultFileContext();
 
-        keyBufferSupplier(fileContext, locator);
+        fileContext.keyBufferSupplier(locator);
 
         try {
             fileBack.delete(fileContext);
