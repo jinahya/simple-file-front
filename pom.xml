@@ -6,7 +6,7 @@
   <!-- The Basics -->
   <groupId>com.github.jinahya</groupId>
   <artifactId>simple-file-front</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.2</version>
   <packaging>jar</packaging>
   <parent>
     <groupId>org.sonatype.oss</groupId>
@@ -342,7 +342,7 @@
     <connection>scm:git:git@github.com:jinahya/simple-file-front.git</connection>
     <developerConnection>scm:git:git@github.com:jinahya/simple-file-front.git</developerConnection>
     <url>https://github.com/jinahya/simple-file-front</url>
-    <tag>HEAD</tag>
+    <tag>0.2</tag>
   </scm>
   <prerequisites>
     <maven>3.1.1</maven>
