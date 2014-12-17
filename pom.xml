@@ -24,7 +24,7 @@
     <dependency>
       <groupId>com.github.jinahya</groupId>
       <artifactId>simple-file-back</artifactId>
-      <version>0.3</version>
+      <version>0.4-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -61,6 +61,12 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.3.2</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>${org.glassfish.jersey.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -101,7 +107,8 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.testSource>1.8</maven.compiler.testSource>
     <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
-    <org.glassfish.jersey.test-framework.version>2.13</org.glassfish.jersey.test-framework.version>
+    <org.glassfish.jersey.version>2.14</org.glassfish.jersey.version>
+    <org.glassfish.jersey.test-framework.version>${org.glassfish.jersey.version}</org.glassfish.jersey.test-framework.version>
   </properties>
 
   <!-- Build Settings -->
