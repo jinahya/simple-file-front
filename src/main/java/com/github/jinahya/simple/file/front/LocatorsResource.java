@@ -59,9 +59,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
-import org.apache.commons.lang3.mutable.Mutable;
-import org.apache.commons.lang3.mutable.MutableLong;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -222,14 +219,18 @@ public class LocatorsResource {
             }
         });
 
-        final MutableLong targetCopiedHolder = new MutableLong();
+        //final MutableLong targetCopiedHolder = new MutableLong();
+        final ValueHolder<Long> targetCopiedHolder = new ValueHolder<>(-1L);
         fileContext.targetCopiedConsumer(targetCopied -> {
-            targetCopiedHolder.setValue(targetCopied);
+            //targetCopiedHolder.setValue(targetCopied);
+            targetCopiedHolder.value(targetCopied);
         });
 
-        final Mutable<String> pathNameHolder = new MutableObject<>();
+        //final Mutable<String> pathNameHolder = new MutableObject<>();
+        final ValueHolder<String> pathNameHolder = new ValueHolder<>();
         fileContext.pathNameConsumer(pathName -> {
-            pathNameHolder.setValue(pathName);
+            //pathNameHolder.setValue(pathName);
+            pathNameHolder.value(pathName);
         });
 
         try {
@@ -238,16 +239,15 @@ public class LocatorsResource {
             throw new WebApplicationException(e);
         }
 
-        if (targetCopiedHolder.getValue() < 0L) {
+        if (targetCopiedHolder.value() < 0L) {
             throw new NotFoundException();
         }
 
-        return Response.ok((StreamingOutput) (output) -> {
+        return Response.ok((StreamingOutput) output -> {
             Files.copy(tempPath, output);
         })
-            .header("Content-Length", targetCopiedHolder.getValue())
-            .header(FileFrontConstants.HEADER_PATH_NAME,
-                    pathNameHolder.getValue())
+            .header("Content-Length", targetCopiedHolder.value())
+            .header(FileFrontConstants.HEADER_PATH_NAME, pathNameHolder.value())
             .build();
     }
 
@@ -281,15 +281,15 @@ public class LocatorsResource {
             fileContext.fileSuffixSupplier(() -> suffix.trim());
         }
 
-        final Mutable<java.nio.file.Path> localPathHolder
-            = new MutableObject<>();
+        final ValueHolder<java.nio.file.Path> localPathHolder
+            = new ValueHolder<>();
         fileContext.localLeafConsumer(
-            localPath -> localPathHolder.setValue(localPath)
+            localPath -> localPathHolder.value(localPath)
         );
 
-        final Mutable<String> pathNameHolder = new MutableObject<>();
+        final ValueHolder<String> pathNameHolder = new ValueHolder<>();
         fileContext.pathNameConsumer(pathName -> {
-            pathNameHolder.setValue(pathName);
+            pathNameHolder.value(pathName);
         });
 
         try {
@@ -307,9 +307,9 @@ public class LocatorsResource {
             }
         });
 
-        final MutableLong sourceCopiedHolder = new MutableLong();
+        final ValueHolder<Long> sourceCopiedHolder = new ValueHolder<>();
         fileContext.sourceCopiedConsumer(
-            sourceCopied -> sourceCopiedHolder.setValue(sourceCopied)
+            sourceCopied -> sourceCopiedHolder.value(sourceCopied)
         );
 
         try {
