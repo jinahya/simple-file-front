@@ -18,42 +18,23 @@
 package com.github.jinahya.simple.file.front;
 
 
+import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.*;
+import java.lang.annotation.Retention;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
+
+
 /**
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
- * @param <T> value type parameter
  */
-public class ValueHolder<T> {
-
-
-    public ValueHolder(final T value) {
-
-        super();
-
-        this.value = value;
-    }
-
-
-    public ValueHolder() {
-
-        this(null);
-    }
-
-
-    public T value() {
-
-        return value;
-    }
-
-
-    public void value(final T value) {
-
-        this.value = value;
-    }
-
-
-    private T value;
-
+@Documented
+@Retention(RUNTIME)
+@Target({FIELD, PARAMETER, METHOD})
+@Qualifier
+public @interface ConfiguredFileFronts {
 
 }
 

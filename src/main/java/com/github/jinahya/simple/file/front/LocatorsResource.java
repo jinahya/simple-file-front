@@ -177,7 +177,7 @@ public class LocatorsResource {
 
         if (tempPath != null) {
             try {
-                Files.delete(tempPath);
+                Files.deleteIfExists(tempPath);
             } catch (final IOException ioe) {
                 logger.error("failed to delete temp path: " + tempPath, ioe);
             }
@@ -220,14 +220,14 @@ public class LocatorsResource {
         });
 
         //final MutableLong targetCopiedHolder = new MutableLong();
-        final ValueHolder<Long> targetCopiedHolder = new ValueHolder<>(-1L);
+        final Holder<Long> targetCopiedHolder = new Holder<>(-1L);
         fileContext.targetCopiedConsumer(targetCopied -> {
             //targetCopiedHolder.setValue(targetCopied);
             targetCopiedHolder.value(targetCopied);
         });
 
         //final Mutable<String> pathNameHolder = new MutableObject<>();
-        final ValueHolder<String> pathNameHolder = new ValueHolder<>();
+        final Holder<String> pathNameHolder = new Holder<>();
         fileContext.pathNameConsumer(pathName -> {
             //pathNameHolder.setValue(pathName);
             pathNameHolder.value(pathName);
@@ -281,13 +281,12 @@ public class LocatorsResource {
             fileContext.fileSuffixSupplier(() -> suffix.trim());
         }
 
-        final ValueHolder<java.nio.file.Path> localPathHolder
-            = new ValueHolder<>();
+        final Holder<java.nio.file.Path> localPathHolder = new Holder<>();
         fileContext.localLeafConsumer(
             localPath -> localPathHolder.value(localPath)
         );
 
-        final ValueHolder<String> pathNameHolder = new ValueHolder<>();
+        final Holder<String> pathNameHolder = new Holder<>();
         fileContext.pathNameConsumer(pathName -> {
             pathNameHolder.value(pathName);
         });
@@ -307,7 +306,7 @@ public class LocatorsResource {
             }
         });
 
-        final ValueHolder<Long> sourceCopiedHolder = new ValueHolder<>();
+        final Holder<Long> sourceCopiedHolder = new Holder<>();
         fileContext.sourceCopiedConsumer(
             sourceCopied -> sourceCopiedHolder.value(sourceCopied)
         );
@@ -372,7 +371,7 @@ public class LocatorsResource {
     }
 
 
-    private transient Logger logger = getLogger(getClass());
+    private transient final Logger logger = getLogger(getClass());
 
 
     private transient java.nio.file.Path tempPath;
@@ -382,6 +381,7 @@ public class LocatorsResource {
      * A file back injected.
      */
     @Inject
+    @ConfiguredFileBack
     private FileBack fileBack;
 
 
@@ -389,13 +389,10 @@ public class LocatorsResource {
      * A list of sibling file fronts to distribute files and commands.
      */
     @Inject
+    @ConfiguredFileFronts
     private List<URI> fileFronts;
 
 
-    //@Context
-    //private HttpServletRequest servletRequest;
-    //@Context
-    //private HttpServletResponse servletResponse;
     @Context
     private UriInfo uriInfo;
 
