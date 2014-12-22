@@ -233,10 +233,12 @@ public class LocatorsResource {
             pathNameHolder.value(pathName);
         });
 
-        try {
-            fileBack.read(fileContext);
-        } catch (final IOException | FileBackException e) {
-            throw new WebApplicationException(e);
+        for (final FileBack fileBack : fileBacks) {
+            try {
+                fileBack.read(fileContext);
+            } catch (final IOException | FileBackException e) {
+                throw new WebApplicationException(e);
+            }
         }
 
         if (targetCopiedHolder.value() < 0L) {
@@ -311,11 +313,13 @@ public class LocatorsResource {
             sourceCopied -> sourceCopiedHolder.value(sourceCopied)
         );
 
-        try {
-            fileBack.write(fileContext);
-        } catch (IOException | FileBackException e) {
-            logger.error("failed to write", e);
-            throw new WebApplicationException(e); // 500
+        for (final FileBack fileBack : fileBacks) {
+            try {
+                fileBack.write(fileContext);
+            } catch (IOException | FileBackException e) {
+                logger.error("failed to write", e);
+                throw new WebApplicationException(e); // 500
+            }
         }
 
         if (distribute) {
@@ -355,11 +359,13 @@ public class LocatorsResource {
             fileContext.fileSuffixSupplier(() -> suffix.trim());
         }
 
-        try {
-            fileBack.delete(fileContext);
-        } catch (IOException | FileBackException e) {
-            logger.error("failed to delete", e);
-            throw new WebApplicationException(e);
+        for (final FileBack fileBack : fileBacks) {
+            try {
+                fileBack.delete(fileContext);
+            } catch (IOException | FileBackException e) {
+                logger.error("failed to delete", e);
+                throw new WebApplicationException(e);
+            }
         }
 
         if (distribute) {
@@ -381,15 +387,15 @@ public class LocatorsResource {
      * A file back injected.
      */
     @Inject
-    @ConfiguredFileBack
-    private FileBack fileBack;
+    @FileBacks
+    private List<FileBack> fileBacks;
 
 
     /**
      * A list of sibling file fronts to distribute files and commands.
      */
     @Inject
-    @ConfiguredFileFronts
+    @FileFronts
     private List<URI> fileFronts;
 
 

@@ -28,7 +28,12 @@ public final class FileFrontConstants {
     public static final String HEADER_PATH_NAME = "File-Front-Path-Name";
 
 
-    public static final String HEADER_BYTES_COPIED = "File-Front-Bytes-Copied";
+    public static final String HEADER_SOURCE_COPIED
+        = "File-Front-Source-Copied";
+
+
+    public static final String HEADER_TARGET_COPIED
+        = "File-Front-Target-Copied";
 
 
     private FileFrontConstants() {

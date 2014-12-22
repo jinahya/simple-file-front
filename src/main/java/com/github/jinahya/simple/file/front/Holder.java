@@ -23,7 +23,7 @@ package com.github.jinahya.simple.file.front;
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  * @param <T> value type parameter
  */
-public class Holder<T> {
+class Holder<T> {
 
 
     public Holder(final T value) {
