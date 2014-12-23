@@ -25,7 +25,7 @@
       <groupId>com.github.jinahya</groupId>
       <artifactId>simple-file-back</artifactId>
       <version>0.4-SNAPSHOT</version>
-      <scope>provided</scope>
+      <scope>compile</scope>
     </dependency>
 <!--    <dependency>
       <groupId>com.google.guava</groupId>

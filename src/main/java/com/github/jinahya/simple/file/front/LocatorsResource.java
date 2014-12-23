@@ -219,26 +219,20 @@ public class LocatorsResource {
             }
         });
 
-        //final MutableLong targetCopiedHolder = new MutableLong();
         final Holder<Long> targetCopiedHolder = new Holder<>(-1L);
         fileContext.targetCopiedConsumer(targetCopied -> {
-            //targetCopiedHolder.setValue(targetCopied);
             targetCopiedHolder.value(targetCopied);
         });
 
-        //final Mutable<String> pathNameHolder = new MutableObject<>();
         final Holder<String> pathNameHolder = new Holder<>();
         fileContext.pathNameConsumer(pathName -> {
-            //pathNameHolder.setValue(pathName);
             pathNameHolder.value(pathName);
         });
 
-        for (final FileBack fileBack : fileBacks) {
-            try {
-                fileBack.read(fileContext);
-            } catch (final IOException | FileBackException e) {
-                throw new WebApplicationException(e);
-            }
+        try {
+            fileBack.read(fileContext);
+        } catch (final IOException | FileBackException e) {
+            throw new WebApplicationException(e);
         }
 
         if (targetCopiedHolder.value() < 0L) {
@@ -313,13 +307,11 @@ public class LocatorsResource {
             sourceCopied -> sourceCopiedHolder.value(sourceCopied)
         );
 
-        for (final FileBack fileBack : fileBacks) {
-            try {
-                fileBack.write(fileContext);
-            } catch (IOException | FileBackException e) {
-                logger.error("failed to write", e);
-                throw new WebApplicationException(e); // 500
-            }
+        try {
+            fileBack.write(fileContext);
+        } catch (IOException | FileBackException e) {
+            logger.error("failed to write", e);
+            throw new WebApplicationException(e); // 500
         }
 
         if (distribute) {
@@ -347,8 +339,8 @@ public class LocatorsResource {
     public Response deleteSingle(
         @PathParam("locator") final String locator,
         @QueryParam("suffix") final String suffix,
-        @QueryParam("distribute")
-        @DefaultValue("true") final boolean distribute) {
+        @QueryParam("distribute") @DefaultValue("true")
+        final boolean distribute) {
 
         final FileContext fileContext = new DefaultFileContext();
 
@@ -359,13 +351,11 @@ public class LocatorsResource {
             fileContext.fileSuffixSupplier(() -> suffix.trim());
         }
 
-        for (final FileBack fileBack : fileBacks) {
-            try {
-                fileBack.delete(fileContext);
-            } catch (IOException | FileBackException e) {
-                logger.error("failed to delete", e);
-                throw new WebApplicationException(e);
-            }
+        try {
+            fileBack.delete(fileContext);
+        } catch (IOException | FileBackException e) {
+            logger.error("failed to delete", e);
+            throw new WebApplicationException(e);
         }
 
         if (distribute) {
@@ -387,15 +377,15 @@ public class LocatorsResource {
      * A file back injected.
      */
     @Inject
-    @FileBacks
-    private List<FileBack> fileBacks;
+    @Backing
+    private FileBack fileBack;
 
 
     /**
      * A list of sibling file fronts to distribute files and commands.
      */
     @Inject
-    @FileFronts
+    @Siblings
     private List<URI> fileFronts;
 
 
