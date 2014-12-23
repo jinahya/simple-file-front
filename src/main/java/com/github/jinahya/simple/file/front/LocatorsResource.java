@@ -193,7 +193,7 @@ public class LocatorsResource {
      *
      * @return a response.
      */
-    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.WILDCARD)
     @GET
     @Path("/{locator: .+}")
     public Response readSingle(
@@ -258,9 +258,9 @@ public class LocatorsResource {
      *
      * @return a response.
      */
+    @Consumes(MediaType.WILDCARD)
     @PUT
     @Path("/{locator: .+}")
-    @Produces(MediaType.WILDCARD)
     public Response updateSingle(
         @PathParam("locator") final String locator,
         @QueryParam("suffix") final String suffix,
