@@ -49,8 +49,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-@Path("/paths")
-public class PathsResource {
+@Path("/pathNames")
+public class PathNamesResource {
 
 
     @PostConstruct
