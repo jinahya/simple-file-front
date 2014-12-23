@@ -19,6 +19,7 @@ package com.github.jinahya.simple.file.front;
 
 
 /**
+ * A simple value holder for consumers.
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  * @param <T> value type parameter

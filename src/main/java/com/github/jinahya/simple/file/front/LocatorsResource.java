@@ -179,7 +179,7 @@ public class LocatorsResource {
             try {
                 Files.deleteIfExists(tempPath);
             } catch (final IOException ioe) {
-                logger.error("failed to delete temp path: " + tempPath, ioe);
+                logger.error("failed to delete tempPath: " + tempPath, ioe);
             }
         }
     }
@@ -308,7 +308,7 @@ public class LocatorsResource {
         );
 
         try {
-            fileBack.write(fileContext);
+            fileBack.update(fileContext);
         } catch (IOException | FileBackException e) {
             logger.error("failed to write", e);
             throw new WebApplicationException(e); // 500
