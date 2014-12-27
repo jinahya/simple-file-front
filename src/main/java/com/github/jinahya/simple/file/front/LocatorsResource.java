@@ -68,7 +68,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-@Path("/locators")
+@Path("locators")
 public class LocatorsResource {
 
 
@@ -195,7 +195,7 @@ public class LocatorsResource {
      */
     @Produces(MediaType.WILDCARD)
     @GET
-    @Path("/{locator: .+}")
+    @Path("{locator: .+}")
     public Response readSingle(
         @PathParam("locator") final String locator,
         @QueryParam("suffix") final String suffix) {
@@ -260,7 +260,7 @@ public class LocatorsResource {
      */
     @Consumes(MediaType.WILDCARD)
     @PUT
-    @Path("/{locator: .+}")
+    @Path("{locator: .+}")
     public Response updateSingle(
         @PathParam("locator") final String locator,
         @QueryParam("suffix") final String suffix,
@@ -276,11 +276,6 @@ public class LocatorsResource {
         if (suffix != null && !suffix.trim().isEmpty()) {
             fileContext.fileSuffixSupplier(() -> suffix.trim());
         }
-
-        final Holder<java.nio.file.Path> localPathHolder = new Holder<>();
-        fileContext.localLeafConsumer(
-            localPath -> localPathHolder.value(localPath)
-        );
 
         final Holder<String> pathNameHolder = new Holder<>();
         fileContext.pathNameConsumer(pathName -> {
@@ -335,7 +330,7 @@ public class LocatorsResource {
      * @return response
      */
     @DELETE
-    @Path("/{locator: .+}")
+    @Path("{locator: .+}")
     public Response deleteSingle(
         @PathParam("locator") final String locator,
         @QueryParam("suffix") final String suffix,
