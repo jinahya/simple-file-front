@@ -32,7 +32,7 @@ import javax.inject.Qualifier;
  */
 @Documented
 @Retention(RUNTIME)
-@Target({FIELD, PARAMETER, METHOD})
+@Target({FIELD, METHOD, PARAMETER, TYPE})
 @Qualifier
 public @interface Siblings {
 
