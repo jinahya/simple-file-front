@@ -49,8 +49,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-@Path("/pathNames")
-public class PathNamesResource {
+@Path("/paths")
+public class PathsResource {
 
 
     @PostConstruct
@@ -73,14 +73,14 @@ public class PathNamesResource {
 
     @Produces(MediaType.WILDCARD)
     @GET
-    @Path("/{pathName: .+}")
-    public Response locateSingle(@PathParam("pathName") final String pathName) {
+    @Path("/{path: .+}")
+    public Response locateSingle(@PathParam("path") final String path) {
 
-        logger.debug("pathName: {}", pathName);
+        logger.debug("path: {}", path);
 
         final FileContext fileContext = new DefaultFileContext();
 
-        fileContext.pathNameSupplier(() -> pathName);
+        fileContext.pathNameSupplier(() -> path);
 
         fileContext.targetChannelSupplier(() -> {
             try {
@@ -92,7 +92,7 @@ public class PathNamesResource {
             }
         });
 
-        final Holder<Long> targetCopiedHolder = new Holder<>(-1L);
+        final Holder<Long> targetCopiedHolder = new Holder<>();
         fileContext.targetCopiedConsumer(targetCopied -> {
             targetCopiedHolder.value(targetCopied);
         });
@@ -103,7 +103,7 @@ public class PathNamesResource {
             throw new WebApplicationException(e);
         }
 
-        if (targetCopiedHolder.value() < 0L) {
+        if (targetCopiedHolder.value() == null) {
             throw new NotFoundException();
         }
 

@@ -219,7 +219,7 @@ public class LocatorsResource {
             }
         });
 
-        final Holder<Long> targetCopiedHolder = new Holder<>(-1L);
+        final Holder<Long> targetCopiedHolder = new Holder<>();
         fileContext.targetCopiedConsumer(targetCopied -> {
             targetCopiedHolder.value(targetCopied);
         });
@@ -232,11 +232,11 @@ public class LocatorsResource {
         try {
             fileBack.read(fileContext);
         } catch (final IOException | FileBackException e) {
-            throw new WebApplicationException(e);
+            throw new WebApplicationException(e); // 500
         }
 
-        if (targetCopiedHolder.value() < 0L) {
-            throw new NotFoundException();
+        if (targetCopiedHolder.value() == null) {
+            throw new NotFoundException(); // 404
         }
 
         return Response.ok((StreamingOutput) output -> {
