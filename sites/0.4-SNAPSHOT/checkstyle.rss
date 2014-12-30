@@ -102,20 +102,6 @@ under the License.
               </tr>
                           <tr>
                 <td>
-                  <a href="http://jinahya.github.io/simple-file-front/sites/0.4-SNAPSHOT/checkstyle.html#com.github.jinahya.simple.file.front.PathNamesResource.java">com/github/jinahya/simple/file/front/PathNamesResource.java</a>
-                </td>
-                <td>
-                  0
-                </td>
-                <td>
-                  0
-                </td>
-                <td>
-                  1
-                </td>
-              </tr>
-                          <tr>
-                <td>
                   <a href="http://jinahya.github.io/simple-file-front/sites/0.4-SNAPSHOT/checkstyle.html#com.github.jinahya.simple.file.front.FileFrontConstants.java">com/github/jinahya/simple/file/front/FileFrontConstants.java</a>
                 </td>
                 <td>
@@ -126,6 +112,20 @@ under the License.
                 </td>
                 <td>
                   4
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://jinahya.github.io/simple-file-front/sites/0.4-SNAPSHOT/checkstyle.html#com.github.jinahya.simple.file.front.PathsResource.java">com/github/jinahya/simple/file/front/PathsResource.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
                 </td>
               </tr>
                       </tbody>
