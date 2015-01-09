@@ -28,12 +28,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>4.0-beta5</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
       <version>1</version>
@@ -54,26 +48,8 @@
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
-      <version>${org.glassfish.jersey.version}</version>
+      <version>2.14</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.test-framework</groupId>
-      <artifactId>jersey-test-framework-core</artifactId>
-      <version>${org.glassfish.jersey.test-framework.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-      <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-      <version>${org.glassfish.jersey.test-framework.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.10.17</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -95,8 +71,6 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.testSource>1.8</maven.compiler.testSource>
     <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
-    <org.glassfish.jersey.version>2.14</org.glassfish.jersey.version>
-    <org.glassfish.jersey.test-framework.version>${org.glassfish.jersey.version}</org.glassfish.jersey.test-framework.version>
   </properties>
 
   <!-- Build Settings -->
@@ -196,44 +170,6 @@
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>check-signature-java15</id>
-            <phase>process-classes</phase> <!-- default -->
-            <goals>
-              <!--
-              <goal>check</goal>
-              -->
-            </goals>
-            <configuration>
-              <signature>
-                <groupId>org.codehaus.mojo.signature</groupId>
-                <artifactId>java16</artifactId>
-                <version>1.1</version>
-              </signature>
-            </configuration>
-          </execution>
-          <execution>
-            <id>check-signature-android-api-signature-10</id>
-            <phase>process-classes</phase> <!-- default -->
-            <goals>
-              <!--
-              <goal>check</goal>
-              -->
-            </goals>
-            <configuration>
-              <signature>
-                <groupId>com.googlecode.jinahya</groupId>
-                <artifactId>android-api-signature-10</artifactId>
-                <version>1.0.2</version>
-              </signature>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

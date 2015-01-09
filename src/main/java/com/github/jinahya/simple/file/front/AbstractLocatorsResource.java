@@ -35,6 +35,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -68,8 +69,11 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-@Path("locators")
-public class LocatorsResource {
+//@Path("locators")
+public abstract class AbstractLocatorsResource {
+
+
+    public static final String PREFERRED_PATH_VALUE = "locators";
 
 
     private static final String PROPERTY_PREFIX
@@ -108,6 +112,7 @@ public class LocatorsResource {
         logger.debug("mediaType: {}", mediaType);
 
         for (final URI fileFront : fileFronts) {
+            logger.debug("fileFront: {}", fileFront);
             if (baseUri.equals(fileFront)) {
                 logger.debug("skipping self: " + fileFront);
                 continue;
@@ -172,8 +177,13 @@ public class LocatorsResource {
     }
 
 
+    @PostConstruct
+    private void constructed() {
+    }
+
+
     @PreDestroy
-    public void preDestoy() {
+    private void destroying() {
 
         if (tempPath != null) {
             try {
@@ -199,6 +209,8 @@ public class LocatorsResource {
     public Response readSingle(
         @PathParam("locator") final String locator,
         @QueryParam("suffix") final String suffix) {
+
+        logger.debug("Header.Accept: {}", accept);
 
         final FileContext fileContext = new DefaultFileContext();
 
@@ -232,10 +244,12 @@ public class LocatorsResource {
         try {
             fileBack.read(fileContext);
         } catch (final IOException | FileBackException e) {
+            logger.error("failed to read", e);
             throw new WebApplicationException(e); // 500
         }
 
         if (targetCopiedHolder.value() == null) {
+            logger.error("targetCopied -> null");
             throw new NotFoundException(); // 404
         }
 
@@ -390,6 +404,10 @@ public class LocatorsResource {
 
     @HeaderParam("Content-Type")
     private MediaType contentType;
+
+
+    @HeaderParam("Accept")
+    private String accept;
 
 
 }

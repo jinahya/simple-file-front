@@ -49,17 +49,20 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-@Path("/paths")
-public class PathsResource {
+//@Path("/paths")
+public abstract class AbstractPathsResource {
+
+
+    public static final String PREFERRED_PATH_VALUE = "/paths";
 
 
     @PostConstruct
-    public void constructed() {
+    private void constructed() {
     }
 
 
     @PreDestroy
-    public void destroying() {
+    private void destroying() {
 
         if (tempPath != null) {
             try {
