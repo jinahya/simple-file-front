@@ -145,12 +145,16 @@ public abstract class AbstractLocatorsResource {
 
         final Logger logger = getLogger(lookup().lookupClass());
 
+        logger.debug("deleteSingleDistribute({}, {}, {})", fileContext, uriInfo,
+                     fileFronts);
+
         final URI baseUri = uriInfo.getBaseUri();
-        logger.debug("baseUri: {}", baseUri);
+        logger.debug("uriInfo.baseUri: {}", baseUri);
         final String path = uriInfo.getPath();
-        logger.debug("path: {}", path);
+        logger.debug("uriInfo.path: {}", path);
 
         for (final URI fileFront : fileFronts) {
+            logger.debug("fileFront: {}", fileFront);
             if (baseUri.equals(fileFront)) {
                 logger.debug("skipping self: " + fileFront);
                 continue;
