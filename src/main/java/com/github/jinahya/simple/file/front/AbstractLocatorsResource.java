@@ -94,10 +94,13 @@ public abstract class AbstractLocatorsResource {
 
         final Logger logger = getLogger(lookup().lookupClass());
 
+        logger.debug("updateSingleDistribute({}, {}, {})", fileContext, uriInfo,
+                     fileFronts);
+
         final URI baseUri = uriInfo.getBaseUri();
-        logger.debug("baseUri: {}", baseUri);
+        logger.debug("uriInfo.baseUri: {}", baseUri);
         final String path = uriInfo.getPath();
-        logger.debug("path: {}", path);
+        logger.debug("uriInfo.path: {}", path);
 
         final java.nio.file.Path tempPath = fileContext.property(
             PROPERTY_TEMP_PATH, java.nio.file.Path.class).orElse(null);
@@ -113,6 +116,10 @@ public abstract class AbstractLocatorsResource {
 
         for (final URI fileFront : fileFronts) {
             logger.debug("fileFront: {}", fileFront);
+            if (!fileFront.isAbsolute()) {
+                logger.warn("not an absolute uri: {}", fileFront);
+                continue;
+            }
             if (baseUri.equals(fileFront)) {
                 logger.debug("skipping self: " + fileFront);
                 continue;
@@ -159,6 +166,10 @@ public abstract class AbstractLocatorsResource {
                 logger.debug("skipping self: " + fileFront);
                 continue;
             }
+            if (!fileFront.isAbsolute()) {
+                logger.warn("not an absolute uri: {}", fileFront);
+                continue;
+            }
             final Client client = ClientBuilder.newClient()
                 .property(ClientProperties.CONNECT_TIMEOUT, 1000)
                 .property(ClientProperties.READ_TIMEOUT, 1000);
@@ -183,6 +194,9 @@ public abstract class AbstractLocatorsResource {
 
     @PostConstruct
     private void constructed() {
+
+        logger.debug("fileBack: {}", fileBack);
+        logger.debug("fileFronts: {}", fileFronts);
     }
 
 

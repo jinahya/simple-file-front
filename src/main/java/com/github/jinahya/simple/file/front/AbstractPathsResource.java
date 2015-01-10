@@ -23,6 +23,7 @@ import com.github.jinahya.simple.file.back.FileBack;
 import com.github.jinahya.simple.file.back.FileBackException;
 import com.github.jinahya.simple.file.back.FileContext;
 import java.io.IOException;
+import static java.lang.invoke.MethodHandles.lookup;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -77,7 +78,7 @@ public abstract class AbstractPathsResource {
     @Produces(MediaType.WILDCARD)
     @GET
     @Path("/{path: .+}")
-    public Response locateSingle(@PathParam("path") final String path) {
+    public Response readSingle(@PathParam("path") final String path) {
 
         logger.debug("path: {}", path);
 
@@ -101,8 +102,8 @@ public abstract class AbstractPathsResource {
         });
 
         try {
-            fileBack.locate(fileContext);
-        } catch (final IOException | FileBackException e) {
+            fileBack.read(fileContext);
+        } catch (IOException | FileBackException e) {
             throw new WebApplicationException(e);
         }
 
@@ -118,7 +119,7 @@ public abstract class AbstractPathsResource {
     }
 
 
-    private transient final Logger logger = getLogger(getClass());
+    private transient final Logger logger = getLogger(lookup().lookupClass());
 
 
     private transient java.nio.file.Path tempPath;
