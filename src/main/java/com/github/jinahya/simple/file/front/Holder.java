@@ -19,27 +19,41 @@ package com.github.jinahya.simple.file.front;
 
 
 /**
+ * A simple value holder for consumers.
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
+ * @param <T> value type parameter
  */
-public final class FileFrontConstants {
+class Holder<T> {
 
 
-    public static final String HEADER_PATH_NAME = "File-Front-Path-Name";
-
-
-    public static final String HEADER_SOURCE_COPIED
-        = "File-Front-Source-Copied";
-
-
-    public static final String HEADER_TARGET_COPIED
-        = "File-Front-Target-Copied";
-
-
-    private FileFrontConstants() {
+    public Holder(final T value) {
 
         super();
+
+        this.value = value;
     }
+
+
+    public Holder() {
+
+        this(null);
+    }
+
+
+    public T value() {
+
+        return value;
+    }
+
+
+    public void value(final T value) {
+
+        this.value = value;
+    }
+
+
+    private T value;
 
 
 }

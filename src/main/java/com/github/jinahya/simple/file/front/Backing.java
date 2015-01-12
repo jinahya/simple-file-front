@@ -18,24 +18,23 @@
 package com.github.jinahya.simple.file.front;
 
 
-import javax.ws.rs.core.Application;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTestNg.ContainerPerClassTest;
+import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.*;
+import java.lang.annotation.Retention;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
 
 
 /**
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-public class LocatorsResourceTest extends ContainerPerClassTest {
-
-
-    @Override
-    protected Application configure() {
-
-        return new ResourceConfig(LocatorsResource.class);
-    }
-
+@Documented
+@Retention(RUNTIME)
+@Target({FIELD, METHOD, PARAMETER, TYPE})
+@Qualifier
+public @interface Backing {
 
 }
 
