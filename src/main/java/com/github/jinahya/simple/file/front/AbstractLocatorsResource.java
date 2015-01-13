@@ -196,8 +196,10 @@ public abstract class AbstractLocatorsResource {
 
         return Response
             .ok((StreamingOutput) output -> Files.copy(tempPath, output))
-            .header("Content-Length", sourceCopied_[0])
+            //.header("Content-Length", sourceCopied_[0])
             .header(FileFrontConstants.HEADER_PATH_NAME, pathName_[0])
+            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
+            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
             .build();
     }
 
@@ -351,6 +353,8 @@ public abstract class AbstractLocatorsResource {
 
         return Response.noContent()
             .header(FileFrontConstants.HEADER_PATH_NAME, pathName_[0])
+            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
+            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
             .build();
     }
 
@@ -383,7 +387,37 @@ public abstract class AbstractLocatorsResource {
         fileContext.targetKeySupplier(
             () -> ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8)));
 
-        fileBack.operate(fileContext);
+        final Object[] sourceObject_ = new Object[1];
+        fileContext.sourceObjectConsumer(sourceObject -> {
+            logger.debug("source object: {}", sourceObject);
+            sourceObject_[0] = sourceObject;
+        });
+
+        final Long[] sourceCopied_ = new Long[1];
+        fileContext.sourceCopiedConsumer(sourceCopied -> {
+            logger.debug("source copied: {}", sourceCopied);
+            sourceCopied_[0] = sourceCopied;
+        });
+
+        final Object[] targetObject_ = new Object[1];
+        fileContext.targetObjectConsumer(targetObject -> {
+            logger.debug("target object: {}", targetObject);
+            targetObject_[0] = targetObject;
+        });
+
+        final Long[] targetCopied_ = new Long[0];
+        fileContext.targetCopiedConsumer(targetCopied -> {
+            logger.debug("target copied: {}", targetCopied);
+            targetCopied_[0] = targetCopied;
+        });
+
+        final String[] pathName_ = new String[1];
+        fileContext.pathNameConsumer(pathName -> {
+            logger.debug("path name: {}", pathName);
+            pathName_[0] = pathName;
+        });
+
+        fileBack.operate(fileContext); // ------------------------------ OPERATE
 
         if (distribute) {
             final URI baseUri = uriInfo.getBaseUri();
@@ -427,7 +461,11 @@ public abstract class AbstractLocatorsResource {
             });
         }
 
-        return Response.noContent().build();
+        return Response.noContent()
+            .header(FileFrontConstants.HEADER_PATH_NAME, pathName_[0])
+            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
+            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
+            .build();
     }
 
 
