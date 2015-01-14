@@ -120,11 +120,126 @@ public abstract class AbstractLocatorsResource {
     }
 
 
+    protected Response copySingle(final FileContext fileContext,
+                                  final String sourceLocator,
+                                  final String targetLocator,
+                                  final boolean distributeFlag)
+        throws IOException, FileBackException {
+
+        logger.debug("copySingle({}, {}, {}, {})", fileContext, sourceLocator,
+                     targetLocator, distributeFlag);
+
+        fileContext.fileOperationSupplier(() -> FileOperation.COPY);
+
+        fileContext.sourceKeySupplier(
+            ofNullable(fileContext.sourceKeySupplier()).orElse(
+                () -> key(sourceLocator)));
+        fileContext.targetKeySupplier(
+            ofNullable(fileContext.targetKeySupplier()).orElse(
+                () -> key(targetLocator)));
+
+        final Object[] sourceObject_ = new Object[1];
+        fileContext.sourceObjectConsumer(
+            ofNullable(fileContext.sourceObjectConsumer()).orElse(
+                sourceObject -> {
+                    logger.debug("consuming source object: {}", sourceObject);
+                    sourceObject_[0] = sourceObject;
+                }));
+
+        final Long[] sourceCopied_ = new Long[1];
+        fileContext.sourceCopiedConsumer(
+            ofNullable(fileContext.sourceCopiedConsumer()).orElse(
+                sourceCopied -> {
+                    logger.debug("consuming source copied: {}", sourceCopied);
+                    sourceCopied_[0] = sourceCopied;
+                }));
+
+        final Object[] targetObject_ = new Object[1];
+        fileContext.targetObjectConsumer(
+            ofNullable(fileContext.targetObjectConsumer()).orElse(
+                targetObject -> {
+                    logger.debug("consuming target object: {}", targetObject);
+                    targetObject_[0] = targetObject;
+                }));
+
+        final Long[] targetCopied_ = new Long[1];
+        fileContext.targetCopiedConsumer(
+            ofNullable(fileContext.targetCopiedConsumer()).orElse(
+                targetCopied -> {
+                    logger.debug("consuming target copied: {}", targetCopied);
+                    targetCopied_[0] = targetCopied;
+                }));
+
+        final String[] pathName_ = new String[1];
+        fileContext.pathNameConsumer(
+            ofNullable(fileContext.pathNameConsumer()).orElse(
+                pathName -> {
+                    logger.debug("consuming path name: {}", pathName);
+                    pathName_[0] = pathName;
+                }));
+
+        try {
+            fileBack.operate(fileContext);
+        } catch (IOException | FileBackException e) {
+            final String message = "failed to operate file back";
+            logger.error(message, e);
+            throw new WebApplicationException(message, e);
+        }
+
+        if (distributeFlag) {
+            final URI baseUri = uriInfo.getBaseUri();
+            logger.debug("uriInfo.baseUri: {}", baseUri);
+            final String path = uriInfo.getPath();
+            logger.debug("uriInfo.path: {}", path);
+            final List<Future<Response>> futures = new ArrayList<>();
+            for (final URI fileFront : fileFronts) {
+                logger.debug("fileFront: {}", fileFront);
+                if (baseUri.equals(fileFront)) {
+                    logger.debug("skipping self: " + fileFront);
+                    continue;
+                }
+                if (!fileFront.isAbsolute()) {
+                    logger.warn("not an absolute uri: {}", fileFront);
+                    continue;
+                }
+                final Client client = ClientBuilder.newClient()
+                    .property(ClientProperties.CONNECT_TIMEOUT, 1000)
+                    .property(ClientProperties.READ_TIMEOUT, 1000);
+                final WebTarget target = client.target(fileFront).path(path)
+                    .queryParam("locator", targetLocator)
+                    .queryParam("distribute", Boolean.FALSE.toString());
+                logger.debug("target.uri: {}", target.getUri().toString());
+                final Future<Response> future
+                    = target.request().async().method("POST");
+                logger.debug("future: {}", future);
+                futures.add(future);
+            }
+            logger.debug("futures: {}", futures);
+            futures.forEach(future -> {
+                try {
+                    final Response response = future.get();
+                    logger.debug("response: {}", response);
+                    logger.debug("response.statusInfo: {}",
+                                 response.getStatusInfo());
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.error("fail to get response", e);
+                }
+            });
+        }
+
+        return Response.noContent()
+            .header(FileFrontConstants.HEADER_PATH_NAME, pathName_[0])
+            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
+            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
+            .build();
+    }
+
+
     @POST
-    @Path("/copy")
+    @Path("/{locator: .+}/copy")
     public Response copySingle(
-        @PathParam("source_locator") final String sourceLocator,
-        @PathParam("target_locator") final String targetLocator,
+        @PathParam("locator") final String sourceLocator,
+        @QueryParam("locator") final String targetLocator,
         @QueryParam("distribute") @DefaultValue("true")
         final boolean distribute)
         throws IOException, FileBackException {
@@ -436,11 +551,11 @@ public abstract class AbstractLocatorsResource {
 
 
     protected Response updateSingle(final FileContext fileContext,
-                                    final ByteBuffer targetKey,
+                                    final String targetLocator,
                                     final InputStream sourceStream,
                                     final boolean distributeFlag) {
 
-        logger.debug("updateSingle({}, {}, {}, {})", fileContext, targetKey,
+        logger.debug("updateSingle({}, {}, {}, {})", fileContext, targetLocator,
                      sourceStream, distributeFlag);
 
         try {
@@ -454,7 +569,7 @@ public abstract class AbstractLocatorsResource {
 
         fileContext.fileOperationSupplier(() -> FileOperation.WRITE);
 
-        fileContext.targetKeySupplier(() -> targetKey);
+        fileContext.targetKeySupplier(() -> key(targetLocator));
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(
@@ -628,8 +743,8 @@ public abstract class AbstractLocatorsResource {
         logger.debug("updateSingle({}, {}, {})", locator, distribute, entity);
 
         if (true) {
-            return updateSingle(new DefaultFileContext(), key(locator), entity,
-                                                              distribute);
+            return updateSingle(new DefaultFileContext(), locator, entity,
+                                distribute);
         }
 
         try {
@@ -783,7 +898,7 @@ public abstract class AbstractLocatorsResource {
                      entity);
 
         if (true) {
-            return updateSingle(new DefaultFileContext(), key(locator), entity,
+            return updateSingle(new DefaultFileContext(), locator, entity,
                                 distribute);
         }
 
