@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Jin Kwon &lt;jinahya_at_gmail.com&gt;.
+ * Copyright 2015 Jin Kwon &lt;jinahya_at_gmail.com&gt;.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,30 @@
 package com.github.jinahya.simple.file.front;
 
 
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
-import javax.inject.Qualifier;
+import static java.lang.invoke.MethodHandles.lookup;
+import javax.annotation.PostConstruct;
+import javax.ws.rs.Path;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 
 
 /**
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
-@Documented
-@Retention(RUNTIME)
-@Target({FIELD, METHOD, PARAMETER, TYPE})
-@Qualifier
-public @interface Siblings {
+@Path("/locators")
+public class LocatorsResource extends AbstractLocatorsResource {
+
+
+    @PostConstruct
+    private void constructed() {
+
+        logger.debug("constructed()");
+    }
+
+
+    private transient final Logger logger = getLogger(lookup().lookupClass());
+
 
 }
 
