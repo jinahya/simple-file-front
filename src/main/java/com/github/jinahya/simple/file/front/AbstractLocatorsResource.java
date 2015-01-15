@@ -1040,6 +1040,28 @@ public abstract class AbstractLocatorsResource {
     }
 
 
+    /**
+     * Returns the injected backing.
+     *
+     * @return the injected backing.
+     */
+    protected FileBack getFileBack() {
+
+        return fileBack;
+    }
+
+
+    /**
+     * Returns the injected siblings.
+     *
+     * @return the injected siblings.
+     */
+    protected List<URI> getFileFronts() {
+
+        return fileFronts;
+    }
+
+
     private transient final Logger logger = getLogger(lookup().lookupClass());
 
 
@@ -1055,7 +1077,7 @@ public abstract class AbstractLocatorsResource {
 
 
     /**
-     * A list of sibling file fronts to distribute files and commands.
+     * A list of URIs to distribute files and commands.
      */
     @Inject
     @Siblings
