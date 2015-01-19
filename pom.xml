@@ -329,7 +329,20 @@
   <prerequisites>
     <maven>3.1.1</maven>
   </prerequisites>
-  <repositories />
+  <repositories>
+    <repository>
+      <id>oss-sonatype-snapshots</id>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </snapshots>
+      <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
   <pluginRepositories />
   <distributionManagement />
   <profiles>
