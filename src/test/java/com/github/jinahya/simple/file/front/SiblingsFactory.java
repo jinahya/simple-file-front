@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Jin Kwon &lt;jinahya_at_gmail.com&gt;.
+ * Copyright 2015 Jin Kwon &lt;jinahya_at_gmail.com&gt;.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,42 +18,36 @@
 package com.github.jinahya.simple.file.front;
 
 
+import static java.lang.invoke.MethodHandles.lookup;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import org.glassfish.hk2.api.Factory;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
+
+
 /**
- * A simple value holder for consumers.
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
- * @param <T> value type parameter
  */
-class Holder<T> {
+public class SiblingsFactory implements Factory<List<URI>> {
 
 
-    public Holder(final T value) {
+    @Override
+    public List<URI> provide() {
 
-        super();
-
-        this.value = value;
+        return Collections.emptyList();
     }
 
 
-    public Holder() {
+    @Override
+    public void dispose(final List<URI> instance) {
 
-        this(null);
     }
 
 
-    public T value() {
-
-        return value;
-    }
-
-
-    public void value(final T value) {
-
-        this.value = value;
-    }
-
-
-    private T value;
+    private transient final Logger logger = getLogger(lookup().lookupClass());
 
 
 }
