@@ -83,7 +83,7 @@ public abstract class AbstractPathsResource {
     public Response readSingle(@PathParam("path") final String path)
         throws IOException, FileBackException {
 
-        logger.debug("path: {}", path);
+        logger.trace("path: {}", path);
 
         tempPath = Files.createTempFile("prefix", "suffix");
 
@@ -93,29 +93,29 @@ public abstract class AbstractPathsResource {
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.debug("source object: {}", sourceObject);
+            logger.trace("source object: {}", sourceObject);
             sourceObject_[0] = sourceObject;
         });
 
         final Long[] sourceCopied_ = new Long[1];
         fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.debug("source copied: {}", sourceCopied);
+            logger.trace("source copied: {}", sourceCopied);
             sourceCopied_[0] = sourceCopied;
         });
 
         final Long[] targetCopied_ = new Long[1];
         fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.debug("target copied: {}", targetCopied);
+            logger.trace("target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
         });
 
         fileContext.sourceChannelConsumer(sourceChannel -> {
-            logger.debug("source channel : {}", sourceChannel);
+            logger.trace("source channel : {}", sourceChannel);
             try {
                 final long sourceCopied = Files.copy(
                     Channels.newInputStream(sourceChannel), tempPath,
                     StandardCopyOption.REPLACE_EXISTING);
-                logger.debug("source copied: {}", sourceCopied);
+                logger.trace("source copied: {}", sourceCopied);
                 sourceCopied_[0] = sourceCopied;
             } catch (final IOException ioe) {
                 final String message
@@ -131,7 +131,7 @@ public abstract class AbstractPathsResource {
                 targetChannel_[0] = FileChannel.open(
                     tempPath, StandardOpenOption.CREATE_NEW,
                     StandardOpenOption.WRITE);
-                logger.debug("target channel: {}", targetChannel_[0]);
+                logger.trace("target channel: {}", targetChannel_[0]);
                 return targetChannel_[0];
             } catch (final IOException ioe) {
                 final String message

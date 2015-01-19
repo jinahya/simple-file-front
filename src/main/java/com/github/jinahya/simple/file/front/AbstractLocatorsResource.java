@@ -45,7 +45,6 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
@@ -85,7 +84,7 @@ public abstract class AbstractLocatorsResource {
 
         final Logger logger = getLogger(lookup().lookupClass());
 
-        logger.debug("key({})", locator);
+        logger.trace("key({})", locator);
 
         return ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8));
     }
@@ -94,13 +93,13 @@ public abstract class AbstractLocatorsResource {
     @PostConstruct
     private void constructed() {
 
-        logger.debug("fileBack: {}", fileBack);
-        logger.debug("fileFronts: {}", fileFronts);
-        logger.debug("Header.Accept: {}", accept);
+        logger.trace("fileBack: {}", fileBack);
+        logger.trace("fileFronts: {}", fileFronts);
+        logger.trace("Header.Accept: {}", accept);
 
         try {
             tempPath = Files.createTempFile("prefix", "suffix");
-            logger.debug("temp path created: {}", tempPath);
+            logger.trace("temp path created: {}", tempPath);
         } catch (final IOException ioe) {
             logger.error("failed to create temp path", ioe);
         }
@@ -126,7 +125,7 @@ public abstract class AbstractLocatorsResource {
                                   final boolean distributeFlag)
         throws IOException, FileBackException {
 
-        logger.debug("copySingle({}, {}, {}, {})", fileContext, sourceLocator,
+        logger.trace("copySingle({}, {}, {}, {})", fileContext, sourceLocator,
                      targetLocator, distributeFlag);
 
         fileContext.fileOperationSupplier(() -> FileOperation.COPY);
@@ -142,7 +141,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.sourceObjectConsumer(
             ofNullable(fileContext.sourceObjectConsumer()).orElse(
                 sourceObject -> {
-                    logger.debug("consuming source object: {}", sourceObject);
+                    logger.trace("consuming source object: {}", sourceObject);
                     sourceObject_[0] = sourceObject;
                 }));
 
@@ -150,7 +149,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.sourceCopiedConsumer(
             ofNullable(fileContext.sourceCopiedConsumer()).orElse(
                 sourceCopied -> {
-                    logger.debug("consuming source copied: {}", sourceCopied);
+                    logger.trace("consuming source copied: {}", sourceCopied);
                     sourceCopied_[0] = sourceCopied;
                 }));
 
@@ -158,7 +157,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.targetObjectConsumer(
             ofNullable(fileContext.targetObjectConsumer()).orElse(
                 targetObject -> {
-                    logger.debug("consuming target object: {}", targetObject);
+                    logger.trace("consuming target object: {}", targetObject);
                     targetObject_[0] = targetObject;
                 }));
 
@@ -166,7 +165,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.targetCopiedConsumer(
             ofNullable(fileContext.targetCopiedConsumer()).orElse(
                 targetCopied -> {
-                    logger.debug("consuming target copied: {}", targetCopied);
+                    logger.trace("consuming target copied: {}", targetCopied);
                     targetCopied_[0] = targetCopied;
                 }));
 
@@ -174,7 +173,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.pathNameConsumer(
             ofNullable(fileContext.pathNameConsumer()).orElse(
                 pathName -> {
-                    logger.debug("consuming path name: {}", pathName);
+                    logger.trace("consuming path name: {}", pathName);
                     pathName_[0] = pathName;
                 }));
 
@@ -188,14 +187,14 @@ public abstract class AbstractLocatorsResource {
 
         if (distributeFlag) {
             final URI baseUri = uriInfo.getBaseUri();
-            logger.debug("uriInfo.baseUri: {}", baseUri);
+            logger.trace("uriInfo.baseUri: {}", baseUri);
             final String path = uriInfo.getPath();
-            logger.debug("uriInfo.path: {}", path);
+            logger.trace("uriInfo.path: {}", path);
             final List<Future<Response>> futures = new ArrayList<>();
             for (final URI fileFront : fileFronts) {
-                logger.debug("fileFront: {}", fileFront);
+                logger.trace("fileFront: {}", fileFront);
                 if (baseUri.equals(fileFront)) {
-                    logger.debug("skipping self: " + fileFront);
+                    logger.trace("skipping self: " + fileFront);
                     continue;
                 }
                 if (!fileFront.isAbsolute()) {
@@ -208,18 +207,18 @@ public abstract class AbstractLocatorsResource {
                 final WebTarget target = client.target(fileFront).path(path)
                     .queryParam("locator", targetLocator)
                     .queryParam("distribute", Boolean.FALSE.toString());
-                logger.debug("target.uri: {}", target.getUri().toString());
+                logger.trace("target.uri: {}", target.getUri().toString());
                 final Future<Response> future
                     = target.request().async().method("POST");
-                logger.debug("future: {}", future);
+                logger.trace("future: {}", future);
                 futures.add(future);
             }
-            logger.debug("futures: {}", futures);
+            logger.trace("futures: {}", futures);
             futures.forEach(future -> {
                 try {
                     final Response response = future.get();
-                    logger.debug("response: {}", response);
-                    logger.debug("response.statusInfo: {}",
+                    logger.trace("response: {}", response);
+                    logger.trace("response.statusInfo: {}",
                                  response.getStatusInfo());
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error("fail to get response", e);
@@ -244,7 +243,7 @@ public abstract class AbstractLocatorsResource {
         final boolean distribute)
         throws IOException, FileBackException {
 
-        logger.debug("copySingle({}, {}, {})", sourceLocator, targetLocator,
+        logger.trace("copySingle({}, {}, {})", sourceLocator, targetLocator,
                      distribute);
 
         final FileContext fileContext = new DefaultFileContext();
@@ -258,31 +257,31 @@ public abstract class AbstractLocatorsResource {
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.debug("source object: {}", sourceObject);
+            logger.trace("source object: {}", sourceObject);
             sourceObject_[0] = sourceObject;
         });
 
         final Long[] sourceCopied_ = new Long[1];
         fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.debug("source copied: {}", sourceCopied);
+            logger.trace("source copied: {}", sourceCopied);
             sourceCopied_[0] = sourceCopied;
         });
 
         final Object[] targetObject_ = new Object[1];
         fileContext.targetObjectConsumer(targetObject -> {
-            logger.debug("target object: {}", targetObject);
+            logger.trace("target object: {}", targetObject);
             targetObject_[0] = targetObject;
         });
 
         final Long[] targetCopied_ = new Long[0];
         fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.debug("target copied: {}", targetCopied);
+            logger.trace("target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
         });
 
         final String[] pathName_ = new String[1];
         fileContext.pathNameConsumer(pathName -> {
-            logger.debug("path name: {}", pathName);
+            logger.trace("path name: {}", pathName);
             pathName_[0] = pathName;
         });
 
@@ -290,14 +289,14 @@ public abstract class AbstractLocatorsResource {
 
         if (distribute) {
             final URI baseUri = uriInfo.getBaseUri();
-            logger.debug("uriInfo.baseUri: {}", baseUri);
+            logger.trace("uriInfo.baseUri: {}", baseUri);
             final String path = uriInfo.getPath();
-            logger.debug("uriInfo.path: {}", path);
+            logger.trace("uriInfo.path: {}", path);
             final List<Future<Response>> futures = new ArrayList<>();
             for (final URI fileFront : fileFronts) {
-                logger.debug("fileFront: {}", fileFront);
+                logger.trace("fileFront: {}", fileFront);
                 if (baseUri.equals(fileFront)) {
-                    logger.debug("skipping self: " + fileFront);
+                    logger.trace("skipping self: " + fileFront);
                     continue;
                 }
                 if (!fileFront.isAbsolute()) {
@@ -311,22 +310,22 @@ public abstract class AbstractLocatorsResource {
                     .queryParam("source_locator", sourceLocator)
                     .queryParam("target_locator", targetLocator)
                     .queryParam("distribute", Boolean.FALSE.toString());
-                logger.debug("target.uri: {}", target.getUri().toString());
+                logger.trace("target.uri: {}", target.getUri().toString());
                 try {
                     final Future<Response> future
                         = target.request().async().method("POST");
-                    logger.debug("future: {}", future);
+                    logger.trace("future: {}", future);
                     futures.add(future);
                 } catch (final ProcessingException pe) {
                     logger.error("failed to distribute to " + fileFront, pe);
                 }
             }
-            logger.debug("futures: {}", futures);
+            logger.trace("futures: {}", futures);
             futures.forEach(future -> {
                 try {
                     final Response response = future.get();
-                    logger.debug("response: {}", response);
-                    logger.debug("response.statusInfo: {}",
+                    logger.trace("response: {}", response);
+                    logger.trace("response.statusInfo: {}",
                                  response.getStatusInfo());
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error("fail to get response", e);
@@ -361,7 +360,7 @@ public abstract class AbstractLocatorsResource {
         final boolean distribute)
         throws IOException, FileBackException {
 
-        logger.debug("deleteSingle({}, {})", locator, distribute);
+        logger.trace("deleteSingle({}, {})", locator, distribute);
 
         final FileContext fileContext = new DefaultFileContext();
 
@@ -372,31 +371,31 @@ public abstract class AbstractLocatorsResource {
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.debug("source object: {}", sourceObject);
+            logger.trace("source object: {}", sourceObject);
             sourceObject_[0] = sourceObject;
         });
 
         final Long[] sourceCopied_ = new Long[1];
         fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.debug("source copied: {}", sourceCopied);
+            logger.trace("source copied: {}", sourceCopied);
             sourceCopied_[0] = sourceCopied;
         });
 
         final Object[] targetObject_ = new Object[1];
         fileContext.targetObjectConsumer(targetObject -> {
-            logger.debug("target object: {}", targetObject);
+            logger.trace("target object: {}", targetObject);
             targetObject_[0] = targetObject;
         });
 
         final Long[] targetCopied_ = new Long[0];
         fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.debug("target copied: {}", targetCopied);
+            logger.trace("target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
         });
 
         final String[] pathName_ = new String[1];
         fileContext.pathNameConsumer(pathName -> {
-            logger.debug("path name: {}", pathName);
+            logger.trace("path name: {}", pathName);
             pathName_[0] = pathName;
         });
 
@@ -404,14 +403,14 @@ public abstract class AbstractLocatorsResource {
 
         if (distribute) {
             final URI baseUri = uriInfo.getBaseUri();
-            logger.debug("uriInfo.baseUri: {}", baseUri);
+            logger.trace("uriInfo.baseUri: {}", baseUri);
             final String path = uriInfo.getPath();
-            logger.debug("uriInfo.path: {}", path);
+            logger.trace("uriInfo.path: {}", path);
             final List<Future<Response>> futures = new ArrayList<>();
             for (final URI fileFront : fileFronts) {
-                logger.debug("fileFront: {}", fileFront);
+                logger.trace("fileFront: {}", fileFront);
                 if (baseUri.equals(fileFront)) {
-                    logger.debug("skipping self: " + fileFront);
+                    logger.trace("skipping self: " + fileFront);
                     continue;
                 }
                 if (!fileFront.isAbsolute()) {
@@ -423,22 +422,22 @@ public abstract class AbstractLocatorsResource {
                     .property(ClientProperties.READ_TIMEOUT, 1000);
                 final WebTarget target = client.target(fileFront).path(path)
                     .queryParam("distribute", Boolean.FALSE.toString());
-                logger.debug("target: {}", target.getUri().toString());
+                logger.trace("target: {}", target.getUri().toString());
                 try {
                     final Future<Response> future
                         = target.request().async().delete();
-                    logger.debug("future: {}", future);
+                    logger.trace("future: {}", future);
                     futures.add(future);
                 } catch (final ProcessingException pe) {
                     logger.error("failed to distribute to " + fileFront, pe);
                 }
             }
-            logger.debug("futures: {}", futures);
+            logger.trace("futures: {}", futures);
             futures.forEach(future -> {
                 try {
                     final Response response = future.get();
-                    logger.debug("response: {}", response);
-                    logger.debug("response.statusInfo: {}",
+                    logger.trace("response: {}", response);
+                    logger.trace("response.statusInfo: {}",
                                  response.getStatusInfo());
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error("fail to get from future", e);
@@ -476,36 +475,36 @@ public abstract class AbstractLocatorsResource {
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.debug("consuming source object: {}", sourceObject);
+            logger.trace("consuming source object: {}", sourceObject);
             sourceObject_[0] = sourceObject;
         });
 
         final Long[] sourceCopied_ = new Long[1];
         fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.debug("consuming source copied: {}", sourceCopied);
+            logger.trace("consuming source copied: {}", sourceCopied);
             sourceCopied_[0] = sourceCopied;
         });
 
         final Object[] targetObject_ = new Object[1];
         fileContext.targetObjectConsumer(targetObject -> {
-            logger.debug("consuming target object: {}", targetObject);
+            logger.trace("consuming target object: {}", targetObject);
             targetObject_[0] = targetObject;
         });
 
         final Long[] targetCopied_ = new Long[1];
         fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.debug("consuming target copied: {}", targetCopied);
+            logger.trace("consuming target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
         });
 
         final String[] pathName_ = new String[1];
         fileContext.pathNameConsumer(pathName -> {
-            logger.debug("consuming path name: {}", pathName);
+            logger.trace("consuming path name: {}", pathName);
             pathName_[0] = pathName;
         });
 
         fileContext.sourceChannelConsumer(sourceChannel -> {
-            logger.debug("consuming source channel : {}", sourceChannel);
+            logger.trace("consuming source channel : {}", sourceChannel);
             try {
                 final long sourceCopied = Files.copy(
                     Channels.newInputStream(sourceChannel), tempPath,
@@ -525,7 +524,7 @@ public abstract class AbstractLocatorsResource {
                 targetChannel_[0] = FileChannel.open(
                     tempPath, StandardOpenOption.CREATE_NEW,
                     StandardOpenOption.WRITE);
-                logger.debug("target channel: {}", targetChannel_[0]);
+                logger.trace("target channel: {}", targetChannel_[0]);
                 return targetChannel_[0];
             } catch (final IOException ioe) {
                 final String message
@@ -555,13 +554,13 @@ public abstract class AbstractLocatorsResource {
                                     final InputStream sourceStream,
                                     final boolean distributeFlag) {
 
-        logger.debug("updateSingle({}, {}, {}, {})", fileContext, targetLocator,
+        logger.trace("updateSingle({}, {}, {}, {})", fileContext, targetLocator,
                      sourceStream, distributeFlag);
 
         try {
             Files.copy(sourceStream, tempPath,
                        StandardCopyOption.REPLACE_EXISTING);
-            logger.debug("source stream copied to temp path");
+            logger.trace("source stream copied to temp path");
         } catch (final IOException ioe) {
             logger.error("failed to copy source stream to temp path", ioe);
             throw new WebApplicationException(ioe);
@@ -575,7 +574,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.sourceObjectConsumer(
             ofNullable(fileContext.sourceObjectConsumer()).orElse(
                 sourceObject -> {
-                    logger.debug("consuming source object: {}", sourceObject);
+                    logger.trace("consuming source object: {}", sourceObject);
                     sourceObject_[0] = sourceObject;
                 }));
 
@@ -583,7 +582,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.sourceCopiedConsumer(
             ofNullable(fileContext.sourceCopiedConsumer()).orElse(
                 sourceCopied -> {
-                    logger.debug("consuming source copied: {}", sourceCopied);
+                    logger.trace("consuming source copied: {}", sourceCopied);
                     sourceCopied_[0] = sourceCopied;
                 }));
 
@@ -591,7 +590,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.targetObjectConsumer(
             ofNullable(fileContext.targetObjectConsumer()).orElse(
                 targetObject -> {
-                    logger.debug("consuming target object: {}", targetObject);
+                    logger.trace("consuming target object: {}", targetObject);
                     targetObject_[0] = targetObject;
                 }));
 
@@ -599,7 +598,7 @@ public abstract class AbstractLocatorsResource {
         fileContext.targetCopiedConsumer(
             ofNullable(fileContext.targetCopiedConsumer()).orElse(
                 targetCopied -> {
-                    logger.debug("consuming target copied: {}", targetCopied);
+                    logger.trace("consuming target copied: {}", targetCopied);
                     targetCopied_[0] = targetCopied;
                 }));
 
@@ -607,16 +606,16 @@ public abstract class AbstractLocatorsResource {
         fileContext.pathNameConsumer(
             ofNullable(fileContext.pathNameConsumer()).orElse(
                 pathName -> {
-                    logger.debug("consuming path name: {}", pathName);
+                    logger.trace("consuming path name: {}", pathName);
                     pathName_[0] = pathName;
                 }));
 
         fileContext.targetChannelConsumer(targetChannel -> {
-            logger.debug("consuming target channel : {}", targetChannel);
+            logger.trace("consuming target channel : {}", targetChannel);
             try {
                 final long targetCopied = Files.copy(
                     tempPath, Channels.newOutputStream(targetChannel));
-                logger.debug("target copied: {}", targetCopied);
+                logger.trace("target copied: {}", targetCopied);
                 targetCopied_[0] = targetCopied;
             } catch (final IOException ioe) {
                 final String message
@@ -631,7 +630,7 @@ public abstract class AbstractLocatorsResource {
             try {
                 sourceChannel_[0] = FileChannel.open(
                     tempPath, StandardOpenOption.READ);
-                logger.debug("suppling source channel: {}", sourceChannel_[0]);
+                logger.trace("suppling source channel: {}", sourceChannel_[0]);
                 return sourceChannel_[0];
             } catch (final IOException ioe) {
                 final String message
@@ -652,7 +651,7 @@ public abstract class AbstractLocatorsResource {
         ofNullable(sourceChannel_[0]).ifPresent(fileChannel -> {
             try {
                 fileChannel.close();
-                logger.debug("file channel closed: {}", fileChannel);
+                logger.trace("file channel closed: {}", fileChannel);
             } catch (final IOException ioe) {
                 final String message
                     = "failed to close file channel: " + fileChannel;
@@ -662,21 +661,21 @@ public abstract class AbstractLocatorsResource {
         });
 
         if (distributeFlag) {
-            logger.debug("distributing...");
+            logger.trace("distributing...");
             final URI baseUri = uriInfo.getBaseUri();
-            logger.debug("uriInfo.baseUri: {}", baseUri);
+            logger.trace("uriInfo.baseUri: {}", baseUri);
             final String path = uriInfo.getPath();
-            logger.debug("uriInfo.path: {}", path);
+            logger.trace("uriInfo.path: {}", path);
             final List<Future<Response>> futures = new ArrayList<>();
-            logger.debug("fileFronts: {}", fileFronts);
+            logger.trace("fileFronts: {}", fileFronts);
             for (final URI fileFront : fileFronts) {
-                logger.debug("fileFront: {}", fileFront);
+                logger.trace("fileFront: {}", fileFront);
                 if (!fileFront.isAbsolute()) {
                     logger.warn("not an absolute uri: {}", fileFront);
                     continue;
                 }
                 if (baseUri.equals(fileFront)) {
-                    logger.debug("skipping self: " + fileFront);
+                    logger.trace("skipping self: " + fileFront);
                     continue;
                 }
                 final Client client = ClientBuilder.newClient()
@@ -684,26 +683,26 @@ public abstract class AbstractLocatorsResource {
                     .property(ClientProperties.READ_TIMEOUT, 2000);
                 final WebTarget target = client.target(fileFront).path(path)
                     .queryParam("distribute", Boolean.FALSE.toString());
-                logger.debug("target: {}", target.getUri().toString());
+                logger.trace("target: {}", target.getUri().toString());
 //            try {
 //                final Response response = target.request().put(
 //                    Entity.entity(tempPath.toFile(), contentType));
-//                logger.debug("response: {}", response);
-//                logger.debug("response.status: {}", response.getStatusInfo());
+//                logger.trace("response: {}", response);
+//                logger.trace("response.status: {}", response.getStatusInfo());
 //            } catch (final ProcessingException pe) {
 //                logger.error("failed to distribute to " + fileFront, pe);
 //            }
                 final Future<Response> future = target.request().async().put(
                     Entity.entity(tempPath.toFile(), contentType));
-                logger.debug("future: {}", future);
+                logger.trace("future: {}", future);
                 futures.add(future);
             }
-            logger.debug("futures: {}", futures);
+            logger.trace("futures: {}", futures);
             futures.forEach(future -> {
                 try {
                     final Response response = future.get();
-                    logger.debug("response: {}", response);
-                    logger.debug("response.status: {}", response.getStatus());
+                    logger.trace("response: {}", response);
+                    logger.trace("response.status: {}", response.getStatus());
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error("fail to get response", e);
                 }
@@ -740,7 +739,7 @@ public abstract class AbstractLocatorsResource {
         final InputStream entity)
         throws IOException, FileBackException {
 
-        logger.debug("updateSingle({}, {}, {})", locator, distribute, entity);
+        logger.trace("updateSingle({}, {}, {})", locator, distribute, entity);
 
         if (true) {
             return updateSingle(new DefaultFileContext(), locator, entity,
@@ -749,7 +748,7 @@ public abstract class AbstractLocatorsResource {
 
         try {
             Files.copy(entity, tempPath, StandardCopyOption.REPLACE_EXISTING);
-            logger.debug("entity copied to temp path");
+            logger.trace("entity copied to temp path");
         } catch (final IOException ioe) {
             logger.error("failed to copy entity to temp path", ioe);
             throw new WebApplicationException(ioe);
@@ -764,40 +763,40 @@ public abstract class AbstractLocatorsResource {
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.debug("source object: {}", sourceObject);
+            logger.trace("source object: {}", sourceObject);
             sourceObject_[0] = sourceObject;
         });
 
         final Long[] sourceCopied_ = new Long[1];
         fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.debug("source copied: {}", sourceCopied);
+            logger.trace("source copied: {}", sourceCopied);
             sourceCopied_[0] = sourceCopied;
         });
 
         final Object[] targetObject_ = new Object[1];
         fileContext.targetObjectConsumer(targetObject -> {
-            logger.debug("target object: {}", targetObject);
+            logger.trace("target object: {}", targetObject);
             targetObject_[0] = targetObject;
         });
 
         final Long[] targetCopied_ = new Long[1];
         fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.debug("target copied: {}", targetCopied);
+            logger.trace("target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
         });
 
         final String[] pathName_ = new String[1];
         fileContext.pathNameConsumer(pathName -> {
-            logger.debug("path name: {}", pathName);
+            logger.trace("path name: {}", pathName);
             pathName_[0] = pathName;
         });
 
         fileContext.targetChannelConsumer(targetChannel -> {
-            logger.debug("target channel : {}", targetChannel);
+            logger.trace("target channel : {}", targetChannel);
             try {
                 final long targetCopied = Files.copy(
                     tempPath, Channels.newOutputStream(targetChannel));
-                logger.debug("target copied: {}", targetCopied);
+                logger.trace("target copied: {}", targetCopied);
                 targetCopied_[0] = targetCopied;
             } catch (final IOException ioe) {
                 final String message
@@ -812,7 +811,7 @@ public abstract class AbstractLocatorsResource {
             try {
                 sourceChannel_[0] = FileChannel.open(
                     tempPath, StandardOpenOption.READ);
-                logger.debug("source channel: {}", sourceChannel_[0]);
+                logger.trace("source channel: {}", sourceChannel_[0]);
                 return sourceChannel_[0];
             } catch (final IOException ioe) {
                 final String message
@@ -827,21 +826,21 @@ public abstract class AbstractLocatorsResource {
         // @todo: check fielback outputs
 
         if (distribute) {
-            logger.debug("distributing...");
+            logger.trace("distributing...");
             final URI baseUri = uriInfo.getBaseUri();
-            logger.debug("uriInfo.baseUri: {}", baseUri);
+            logger.trace("uriInfo.baseUri: {}", baseUri);
             final String path = uriInfo.getPath();
-            logger.debug("uriInfo.path: {}", path);
+            logger.trace("uriInfo.path: {}", path);
             final List<Future<Response>> futures = new ArrayList<>();
-            logger.debug("fileFronts: {}", fileFronts);
+            logger.trace("fileFronts: {}", fileFronts);
             for (final URI fileFront : fileFronts) {
-                logger.debug("fileFront: {}", fileFront);
+                logger.trace("fileFront: {}", fileFront);
                 if (!fileFront.isAbsolute()) {
                     logger.warn("not an absolute uri: {}", fileFront);
                     continue;
                 }
                 if (baseUri.equals(fileFront)) {
-                    logger.debug("skipping self: " + fileFront);
+                    logger.trace("skipping self: " + fileFront);
                     continue;
                 }
                 final Client client = ClientBuilder.newClient()
@@ -849,26 +848,26 @@ public abstract class AbstractLocatorsResource {
                     .property(ClientProperties.READ_TIMEOUT, 2000);
                 final WebTarget target = client.target(fileFront).path(path)
                     .queryParam("distribute", Boolean.FALSE.toString());
-                logger.debug("target: {}", target.getUri().toString());
+                logger.trace("target: {}", target.getUri().toString());
 //            try {
 //                final Response response = target.request().put(
 //                    Entity.entity(tempPath.toFile(), contentType));
-//                logger.debug("response: {}", response);
-//                logger.debug("response.status: {}", response.getStatusInfo());
+//                logger.trace("response: {}", response);
+//                logger.trace("response.status: {}", response.getStatusInfo());
 //            } catch (final ProcessingException pe) {
 //                logger.error("failed to distribute to " + fileFront, pe);
 //            }
                 final Future<Response> future = target.request().async().put(
                     Entity.entity(tempPath.toFile(), contentType));
-                logger.debug("future: {]", future);
+                logger.trace("future: {]", future);
                 futures.add(future);
             }
-            logger.debug("futures: {}", futures);
+            logger.trace("futures: {}", futures);
             futures.forEach(future -> {
                 try {
                     final Response response = future.get();
-                    logger.debug("response: {}", response);
-                    logger.debug("response.status: {}", response.getStatus());
+                    logger.trace("response: {}", response);
+                    logger.trace("response.status: {}", response.getStatus());
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error("fail to get response", e);
                 } catch (final Exception e) {
@@ -885,161 +884,159 @@ public abstract class AbstractLocatorsResource {
     }
 
 
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @POST
-    @Path("/urlencoded/update")
-    public Response updateSingleUrlencoded(
-        @FormParam("locator") final String locator,
-        @FormParam("distribute") @DefaultValue("true") final boolean distribute,
-        @FormParam("entity") final InputStream entity)
-        throws IOException, FileBackException {
-
-        logger.debug("updateSingleUrlencoded({}, {}, {})", locator, distribute,
-                     entity);
-
-        if (true) {
-            return updateSingle(new DefaultFileContext(), locator, entity,
-                                distribute);
-        }
-
-        try {
-            Files.copy(entity, tempPath, StandardCopyOption.REPLACE_EXISTING);
-            logger.debug("entity copied to temp path");
-        } catch (final IOException ioe) {
-            logger.error("failed to copy entity to temp path", ioe);
-            throw new WebApplicationException(ioe);
-        }
-
-        final FileContext fileContext = new DefaultFileContext();
-
-        fileContext.fileOperationSupplier(() -> FileOperation.WRITE);
-
-        fileContext.targetKeySupplier(
-            () -> ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8)));
-
-        final Object[] sourceObject_ = new Object[1];
-        fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.debug("source object: {}", sourceObject);
-            sourceObject_[0] = sourceObject;
-        });
-
-        final Long[] sourceCopied_ = new Long[1];
-        fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.debug("source copied: {}", sourceCopied);
-            sourceCopied_[0] = sourceCopied;
-        });
-
-        final Object[] targetObject_ = new Object[1];
-        fileContext.targetObjectConsumer(targetObject -> {
-            logger.debug("target object: {}", targetObject);
-            targetObject_[0] = targetObject;
-        });
-
-        final Long[] targetCopied_ = new Long[1];
-        fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.debug("target copied: {}", targetCopied);
-            targetCopied_[0] = targetCopied;
-        });
-
-        final String[] pathName_ = new String[1];
-        fileContext.pathNameConsumer(pathName -> {
-            logger.debug("path name: {}", pathName);
-            pathName_[0] = pathName;
-        });
-
-        fileContext.targetChannelConsumer(targetChannel -> {
-            logger.debug("target channel : {}", targetChannel);
-            try {
-                final long targetCopied = Files.copy(
-                    tempPath, Channels.newOutputStream(targetChannel));
-                logger.debug("target copied: {}", targetCopied);
-                targetCopied_[0] = targetCopied;
-            } catch (final IOException ioe) {
-                final String message
-                    = "failed to copy from temp path to target channel";
-                logger.error(message, ioe);
-                throw new WebApplicationException(message, ioe);
-            }
-        });
-
-        final FileChannel[] sourceChannel_ = new FileChannel[1];
-        fileContext.sourceChannelSupplier(true ? null : () -> { // _not_usd_!!!
-            try {
-                sourceChannel_[0] = FileChannel.open(
-                    tempPath, StandardOpenOption.READ);
-                logger.debug("source channel: {}", sourceChannel_[0]);
-                return sourceChannel_[0];
-            } catch (final IOException ioe) {
-                final String message
-                    = "failed to open temp path for reading";
-                logger.error(message, ioe);
-                throw new WebApplicationException(message, ioe);
-            }
-        });
-
-        fileBack.operate(fileContext);
-
-        // @todo: check fielback outputs
-
-        if (distribute) {
-            logger.debug("distributing...");
-            final URI baseUri = uriInfo.getBaseUri();
-            logger.debug("uriInfo.baseUri: {}", baseUri);
-            final String path = uriInfo.getPath();
-            logger.debug("uriInfo.path: {}", path);
-            final List<Future<Response>> futures = new ArrayList<>();
-            logger.debug("fileFronts: {}", fileFronts);
-            for (final URI fileFront : fileFronts) {
-                logger.debug("fileFront: {}", fileFront);
-                if (!fileFront.isAbsolute()) {
-                    logger.warn("not an absolute uri: {}", fileFront);
-                    continue;
-                }
-                if (baseUri.equals(fileFront)) {
-                    logger.debug("skipping self: " + fileFront);
-                    continue;
-                }
-                final Client client = ClientBuilder.newClient()
-                    .property(ClientProperties.CONNECT_TIMEOUT, 2000)
-                    .property(ClientProperties.READ_TIMEOUT, 2000);
-                final WebTarget target = client.target(fileFront).path(path)
-                    .queryParam("distribute", Boolean.FALSE.toString());
-                logger.debug("target: {}", target.getUri().toString());
+//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+//    @POST
+//    @Path("/urlencoded/update")
+//    public Response updateSingleUrlencoded(
+//        @FormParam("locator") final String locator,
+//        @FormParam("distribute") @DefaultValue("true") final boolean distribute,
+//        @FormParam("entity") final InputStream entity)
+//        throws IOException, FileBackException {
+//
+//        logger.trace("updateSingleUrlencoded({}, {}, {})", locator, distribute,
+//                     entity);
+//
+//        if (true) {
+//            return updateSingle(new DefaultFileContext(), locator, entity,
+//                                distribute);
+//        }
+//
+//        try {
+//            Files.copy(entity, tempPath, StandardCopyOption.REPLACE_EXISTING);
+//            logger.trace("entity copied to temp path");
+//        } catch (final IOException ioe) {
+//            logger.error("failed to copy entity to temp path", ioe);
+//            throw new WebApplicationException(ioe);
+//        }
+//
+//        final FileContext fileContext = new DefaultFileContext();
+//
+//        fileContext.fileOperationSupplier(() -> FileOperation.WRITE);
+//
+//        fileContext.targetKeySupplier(
+//            () -> ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8)));
+//
+//        final Object[] sourceObject_ = new Object[1];
+//        fileContext.sourceObjectConsumer(sourceObject -> {
+//            logger.trace("source object: {}", sourceObject);
+//            sourceObject_[0] = sourceObject;
+//        });
+//
+//        final Long[] sourceCopied_ = new Long[1];
+//        fileContext.sourceCopiedConsumer(sourceCopied -> {
+//            logger.trace("source copied: {}", sourceCopied);
+//            sourceCopied_[0] = sourceCopied;
+//        });
+//
+//        final Object[] targetObject_ = new Object[1];
+//        fileContext.targetObjectConsumer(targetObject -> {
+//            logger.trace("target object: {}", targetObject);
+//            targetObject_[0] = targetObject;
+//        });
+//
+//        final Long[] targetCopied_ = new Long[1];
+//        fileContext.targetCopiedConsumer(targetCopied -> {
+//            logger.trace("target copied: {}", targetCopied);
+//            targetCopied_[0] = targetCopied;
+//        });
+//
+//        final String[] pathName_ = new String[1];
+//        fileContext.pathNameConsumer(pathName -> {
+//            logger.trace("path name: {}", pathName);
+//            pathName_[0] = pathName;
+//        });
+//
+//        fileContext.targetChannelConsumer(targetChannel -> {
+//            logger.trace("target channel : {}", targetChannel);
 //            try {
-//                final Response response = target.request().put(
-//                    Entity.entity(tempPath.toFile(), contentType));
-//                logger.debug("response: {}", response);
-//                logger.debug("response.status: {}", response.getStatusInfo());
-//            } catch (final ProcessingException pe) {
-//                logger.error("failed to distribute to " + fileFront, pe);
+//                final long targetCopied = Files.copy(
+//                    tempPath, Channels.newOutputStream(targetChannel));
+//                logger.trace("target copied: {}", targetCopied);
+//                targetCopied_[0] = targetCopied;
+//            } catch (final IOException ioe) {
+//                final String message
+//                    = "failed to copy from temp path to target channel";
+//                logger.error(message, ioe);
+//                throw new WebApplicationException(message, ioe);
 //            }
-                final Future<Response> future = target.request().async().put(
-                    Entity.entity(tempPath.toFile(), contentType));
-                logger.debug("future: {]", future);
-                futures.add(future);
-            }
-            logger.debug("futures: {}", futures);
-            futures.forEach(future -> {
-                try {
-                    final Response response = future.get();
-                    logger.debug("response: {}", response);
-                    logger.debug("response.status: {}", response.getStatus());
-                } catch (InterruptedException | ExecutionException e) {
-                    logger.error("fail to get response", e);
-                } catch (final Exception e) {
-                    logger.error("unhandled", e);
-                }
-            });
-        }
-
-        return Response.noContent()
-            .header(FileFrontConstants.HEADER_PATH_NAME, pathName_[0])
-            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
-            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
-            .build();
-    }
-
-
+//        });
+//
+//        final FileChannel[] sourceChannel_ = new FileChannel[1];
+//        fileContext.sourceChannelSupplier(true ? null : () -> { // _not_usd_!!!
+//            try {
+//                sourceChannel_[0] = FileChannel.open(
+//                    tempPath, StandardOpenOption.READ);
+//                logger.trace("source channel: {}", sourceChannel_[0]);
+//                return sourceChannel_[0];
+//            } catch (final IOException ioe) {
+//                final String message
+//                    = "failed to open temp path for reading";
+//                logger.error(message, ioe);
+//                throw new WebApplicationException(message, ioe);
+//            }
+//        });
+//
+//        fileBack.operate(fileContext);
+//
+//        // @todo: check fielback outputs
+//
+//        if (distribute) {
+//            logger.trace("distributing...");
+//            final URI baseUri = uriInfo.getBaseUri();
+//            logger.trace("uriInfo.baseUri: {}", baseUri);
+//            final String path = uriInfo.getPath();
+//            logger.trace("uriInfo.path: {}", path);
+//            final List<Future<Response>> futures = new ArrayList<>();
+//            logger.trace("fileFronts: {}", fileFronts);
+//            for (final URI fileFront : fileFronts) {
+//                logger.trace("fileFront: {}", fileFront);
+//                if (!fileFront.isAbsolute()) {
+//                    logger.warn("not an absolute uri: {}", fileFront);
+//                    continue;
+//                }
+//                if (baseUri.equals(fileFront)) {
+//                    logger.trace("skipping self: " + fileFront);
+//                    continue;
+//                }
+//                final Client client = ClientBuilder.newClient()
+//                    .property(ClientProperties.CONNECT_TIMEOUT, 2000)
+//                    .property(ClientProperties.READ_TIMEOUT, 2000);
+//                final WebTarget target = client.target(fileFront).path(path)
+//                    .queryParam("distribute", Boolean.FALSE.toString());
+//                logger.trace("target: {}", target.getUri().toString());
+////            try {
+////                final Response response = target.request().put(
+////                    Entity.entity(tempPath.toFile(), contentType));
+////                logger.trace("response: {}", response);
+////                logger.trace("response.status: {}", response.getStatusInfo());
+////            } catch (final ProcessingException pe) {
+////                logger.error("failed to distribute to " + fileFront, pe);
+////            }
+//                final Future<Response> future = target.request().async().put(
+//                    Entity.entity(tempPath.toFile(), contentType));
+//                logger.trace("future: {]", future);
+//                futures.add(future);
+//            }
+//            logger.trace("futures: {}", futures);
+//            futures.forEach(future -> {
+//                try {
+//                    final Response response = future.get();
+//                    logger.trace("response: {}", response);
+//                    logger.trace("response.status: {}", response.getStatus());
+//                } catch (InterruptedException | ExecutionException e) {
+//                    logger.error("fail to get response", e);
+//                } catch (final Exception e) {
+//                    logger.error("unhandled", e);
+//                }
+//            });
+//        }
+//
+//        return Response.noContent()
+//            .header(FileFrontConstants.HEADER_PATH_NAME, pathName_[0])
+//            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
+//            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
+//            .build();
+//    }
     /**
      * Returns the injected backing.
      *
