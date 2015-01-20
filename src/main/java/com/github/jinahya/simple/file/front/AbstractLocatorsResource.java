@@ -453,25 +453,15 @@ public abstract class AbstractLocatorsResource {
     }
 
 
-    /**
-     *
-     * @param locator the file locator.
-     *
-     * @return a response.
-     *
-     * @throws IOException if an I/O error occurs.
-     * @throws FileBackException if a file back error occurs.
-     */
-    @Produces(MediaType.WILDCARD)
-    @GET
-    @Path("{locator: .+}")
-    public Response readSingle(@PathParam("locator") final String locator)
+    protected Response readSingle(final FileContext fileContext,
+                                  final String sourceLocator)
         throws IOException, FileBackException {
 
-        final FileContext fileContext = new DefaultFileContext();
+        logger.trace("readSingle({}, {})", fileContext, sourceLocator);
 
-        fileContext.sourceKeySupplier(
-            () -> ByteBuffer.wrap(locator.getBytes(StandardCharsets.UTF_8)));
+        fileContext.fileOperationSupplier(() -> FileOperation.READ);
+
+        fileContext.sourceKeySupplier(() -> key(sourceLocator));
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
@@ -537,7 +527,8 @@ public abstract class AbstractLocatorsResource {
         fileBack.operate(fileContext);
 
         if (sourceCopied_[0] == null) {
-            throw new NotFoundException("no file for locator: " + locator);
+            throw new NotFoundException(
+                "no file for locator: " + sourceLocator);
         }
 
         return Response
@@ -546,6 +537,29 @@ public abstract class AbstractLocatorsResource {
             .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
             .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
             .build();
+    }
+
+
+    /**
+     *
+     * @param locator the file locator.
+     *
+     * @return a response.
+     *
+     * @throws IOException if an I/O error occurs.
+     * @throws FileBackException if a file back error occurs.
+     */
+    @Produces(MediaType.WILDCARD)
+    @GET
+    @Path("{locator: .+}")
+    public Response readSingle(@PathParam("locator") final String locator)
+        throws IOException, FileBackException {
+
+        logger.trace("readSingle({})", locator);
+
+        final FileContext fileContext = new DefaultFileContext();
+
+        return readSingle(fileContext, locator);
     }
 
 
