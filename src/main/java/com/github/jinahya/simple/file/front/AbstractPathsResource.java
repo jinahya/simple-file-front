@@ -20,6 +20,7 @@ package com.github.jinahya.simple.file.front;
 
 import com.github.jinahya.simple.file.back.DefaultFileContext;
 import com.github.jinahya.simple.file.back.FileBack;
+import com.github.jinahya.simple.file.back.FileBack.FileOperation;
 import com.github.jinahya.simple.file.back.FileBackException;
 import com.github.jinahya.simple.file.back.FileContext;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import static java.util.Optional.ofNullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -69,7 +71,8 @@ public abstract class AbstractPathsResource {
 
         if (tempPath != null) {
             try {
-                Files.deleteIfExists(tempPath);
+                final boolean deleted = Files.deleteIfExists(tempPath);
+                logger.trace("temp path deleted: {}", deleted);
             } catch (final IOException ioe) {
                 logger.error("failed to delete temp path: " + tempPath, ioe);
             }
@@ -89,28 +92,30 @@ public abstract class AbstractPathsResource {
 
         final FileContext fileContext = new DefaultFileContext();
 
+        fileContext.fileOperationSupplier(() -> FileOperation.READ);
+
         fileContext.pathNameSupplier(() -> path);
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.trace("source object: {}", sourceObject);
+            logger.trace("consuming source object: {}", sourceObject);
             sourceObject_[0] = sourceObject;
         });
 
         final Long[] sourceCopied_ = new Long[1];
         fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.trace("source copied: {}", sourceCopied);
+            logger.trace("consuming source copied: {}", sourceCopied);
             sourceCopied_[0] = sourceCopied;
         });
 
         final Long[] targetCopied_ = new Long[1];
         fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.trace("target copied: {}", targetCopied);
+            logger.trace("consuming target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
         });
 
         fileContext.sourceChannelConsumer(sourceChannel -> {
-            logger.trace("source channel : {}", sourceChannel);
+            logger.trace("consuming source channel : {}", sourceChannel);
             try {
                 final long sourceCopied = Files.copy(
                     Channels.newInputStream(sourceChannel), tempPath,
@@ -131,7 +136,7 @@ public abstract class AbstractPathsResource {
                 targetChannel_[0] = FileChannel.open(
                     tempPath, StandardOpenOption.CREATE_NEW,
                     StandardOpenOption.WRITE);
-                logger.trace("target channel: {}", targetChannel_[0]);
+                logger.trace("suppling target channel: {}", targetChannel_[0]);
                 return targetChannel_[0];
             } catch (final IOException ioe) {
                 final String message
@@ -143,13 +148,22 @@ public abstract class AbstractPathsResource {
 
         fileBack.operate(fileContext);
 
-        if (sourceCopied_[0] == null) {
+        ofNullable(targetChannel_[0]).ifPresent(v -> {
+            try {
+                v.close();
+            } catch (final IOException ioe) {
+                logger.error("failed to close target channel", ioe);
+            }
+        });
+
+        if (sourceCopied_[0] == null && targetCopied_[0] == null) {
             throw new NotFoundException("no file for path: " + path);
         }
 
         return Response
             .ok((StreamingOutput) output -> Files.copy(tempPath, output))
-            .header("Content-Length", sourceCopied_[0])
+            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
+            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
             .build();
     }
 
