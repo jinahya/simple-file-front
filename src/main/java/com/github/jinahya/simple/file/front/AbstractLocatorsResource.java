@@ -387,7 +387,7 @@ public abstract class AbstractLocatorsResource {
             targetObject_[0] = targetObject;
         });
 
-        final Long[] targetCopied_ = new Long[0];
+        final Long[] targetCopied_ = new Long[1];
         fileContext.targetCopiedConsumer(targetCopied -> {
             logger.trace("target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
