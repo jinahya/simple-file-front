@@ -6,7 +6,7 @@
   <!-- The Basics -->
   <groupId>com.github.jinahya</groupId>
   <artifactId>simple-file-front</artifactId>
-  <version>0.4</version>
+  <version>0.8</version>
   <packaging>jar</packaging>
   <parent>
     <groupId>org.sonatype.oss</groupId>
@@ -24,8 +24,20 @@
     <dependency>
       <groupId>com.github.jinahya</groupId>
       <artifactId>simple-file-back</artifactId>
-      <version>0.4</version>
+      <version>0.8</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>4.0-beta5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.enterprise</groupId>
+      <artifactId>cdi-api</artifactId>
+      <version>1.2</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -39,6 +51,12 @@
       <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
+    <!--    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>transaction-api</artifactId>
+      <version>1.1</version>
+      <scope>test</scope>
+    </dependency>-->
     <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
@@ -46,21 +64,57 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.glassfish.hk2</groupId>
+      <artifactId>guice-bridge</artifactId>
+      <version>${org.glassfish.hk2.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.hk2</groupId>
+      <artifactId>hk2</artifactId>
+      <version>${org.glassfish.hk2.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers.glassfish</groupId>
+      <artifactId>jersey-gf-cdi</artifactId>
+      <version>${org.glassfish.jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
-      <version>2.14</version>
+      <version>${org.glassfish.jersey.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.test-framework</groupId>
+      <artifactId>jersey-test-framework-core</artifactId>
+      <version>${org.glassfish.jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+      <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+      <version>${org.glassfish.jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${org.mockito.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.9</version>
+      <version>1.7.10</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.8.13</version>
+      <version>6.8.14</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -71,6 +125,9 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.testSource>1.8</maven.compiler.testSource>
     <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
+    <org.glassfish.jersey.version>2.14</org.glassfish.jersey.version>
+    <org.glassfish.hk2.version>2.4.0-b07</org.glassfish.hk2.version>
+    <org.mockito.version>2.0.2-beta</org.mockito.version>
   </properties>
 
   <!-- Build Settings -->
@@ -267,12 +324,25 @@
     <connection>scm:git:git@github.com:jinahya/simple-file-front.git</connection>
     <developerConnection>scm:git:git@github.com:jinahya/simple-file-front.git</developerConnection>
     <url>https://github.com/jinahya/simple-file-front</url>
-    <tag>0.4</tag>
+    <tag>0.8</tag>
   </scm>
   <prerequisites>
     <maven>3.1.1</maven>
   </prerequisites>
-  <repositories />
+  <repositories>
+    <repository>
+      <id>oss-sonatype-snapshots</id>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </snapshots>
+      <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
   <pluginRepositories />
   <distributionManagement />
   <profiles>

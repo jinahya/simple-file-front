@@ -20,13 +20,17 @@ package com.github.jinahya.simple.file.front;
 
 import com.github.jinahya.simple.file.back.DefaultFileContext;
 import com.github.jinahya.simple.file.back.FileBack;
+import com.github.jinahya.simple.file.back.FileBack.FileOperation;
 import com.github.jinahya.simple.file.back.FileBackException;
 import com.github.jinahya.simple.file.back.FileContext;
 import java.io.IOException;
 import static java.lang.invoke.MethodHandles.lookup;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import static java.util.Optional.ofNullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -67,9 +71,10 @@ public abstract class AbstractPathsResource {
 
         if (tempPath != null) {
             try {
-                Files.deleteIfExists(tempPath);
+                final boolean deleted = Files.deleteIfExists(tempPath);
+                logger.trace("temp path deleted: {}", deleted);
             } catch (final IOException ioe) {
-                logger.error("failed to delete tempPath: " + tempPath, ioe);
+                logger.error("failed to delete temp path: " + tempPath, ioe);
             }
         }
     }
@@ -78,43 +83,87 @@ public abstract class AbstractPathsResource {
     @Produces(MediaType.WILDCARD)
     @GET
     @Path("/{path: .+}")
-    public Response readSingle(@PathParam("path") final String path) {
+    public Response readSingle(@PathParam("path") final String path)
+        throws IOException, FileBackException {
 
-        logger.debug("path: {}", path);
+        logger.trace("path: {}", path);
+
+        tempPath = Files.createTempFile("prefix", "suffix");
 
         final FileContext fileContext = new DefaultFileContext();
 
+        fileContext.fileOperationSupplier(() -> FileOperation.READ);
+
         fileContext.pathNameSupplier(() -> path);
 
-        fileContext.targetChannelSupplier(() -> {
+        final Object[] sourceObject_ = new Object[1];
+        fileContext.sourceObjectConsumer(sourceObject -> {
+            logger.trace("consuming source object: {}", sourceObject);
+            sourceObject_[0] = sourceObject;
+        });
+
+        final Long[] sourceCopied_ = new Long[1];
+        fileContext.sourceCopiedConsumer(sourceCopied -> {
+            logger.trace("consuming source copied: {}", sourceCopied);
+            sourceCopied_[0] = sourceCopied;
+        });
+
+        final Long[] targetCopied_ = new Long[1];
+        fileContext.targetCopiedConsumer(targetCopied -> {
+            logger.trace("consuming target copied: {}", targetCopied);
+            targetCopied_[0] = targetCopied;
+        });
+
+        fileContext.sourceChannelConsumer(sourceChannel -> {
+            logger.trace("consuming source channel : {}", sourceChannel);
             try {
-                tempPath = Files.createTempFile("prefix", "suffix");
-                return FileChannel.open(tempPath, StandardOpenOption.READ,
-                                        StandardOpenOption.WRITE);
+                final long sourceCopied = Files.copy(
+                    Channels.newInputStream(sourceChannel), tempPath,
+                    StandardCopyOption.REPLACE_EXISTING);
+                logger.trace("source copied: {}", sourceCopied);
+                sourceCopied_[0] = sourceCopied;
             } catch (final IOException ioe) {
-                throw new RuntimeException(ioe);
+                final String message
+                    = "failed from source channel to temp path";
+                logger.error(message, ioe);
+                throw new WebApplicationException(message, ioe);
             }
         });
 
-        final Holder<Long> targetCopiedHolder = new Holder<>();
-        fileContext.targetCopiedConsumer(targetCopied -> {
-            targetCopiedHolder.value(targetCopied);
+        final FileChannel[] targetChannel_ = new FileChannel[1];
+        fileContext.targetChannelSupplier(true ? null : () -> { // _not_usd_!!!
+            try {
+                targetChannel_[0] = FileChannel.open(
+                    tempPath, StandardOpenOption.CREATE_NEW,
+                    StandardOpenOption.WRITE);
+                logger.trace("suppling target channel: {}", targetChannel_[0]);
+                return targetChannel_[0];
+            } catch (final IOException ioe) {
+                final String message
+                    = "failed to open temp path for writing";
+                logger.error(message, ioe);
+                throw new WebApplicationException(message, ioe);
+            }
         });
 
-        try {
-            fileBack.read(fileContext);
-        } catch (IOException | FileBackException e) {
-            throw new WebApplicationException(e);
+        fileBack.operate(fileContext);
+
+        ofNullable(targetChannel_[0]).ifPresent(v -> {
+            try {
+                v.close();
+            } catch (final IOException ioe) {
+                logger.error("failed to close target channel", ioe);
+            }
+        });
+
+        if (sourceCopied_[0] == null && targetCopied_[0] == null) {
+            throw new NotFoundException("no file for path: " + path);
         }
 
-        if (targetCopiedHolder.value() == null) {
-            throw new NotFoundException();
-        }
-
-        return Response.ok((StreamingOutput) output -> {
-            Files.copy(tempPath, output);
-        })
-            .header("Content-Length", targetCopiedHolder.value())
+        return Response
+            .ok((StreamingOutput) output -> Files.copy(tempPath, output))
+            .header(FileFrontConstants.HEADER_SOURCE_COPIED, sourceCopied_[0])
+            .header(FileFrontConstants.HEADER_TARGET_COPIED, targetCopied_[0])
             .build();
     }
 
