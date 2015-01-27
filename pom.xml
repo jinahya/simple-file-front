@@ -24,7 +24,7 @@
     <dependency>
       <groupId>com.github.jinahya</groupId>
       <artifactId>simple-file-back</artifactId>
-      <version>0.8-SNAPSHOT</version>
+      <version>0.8</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

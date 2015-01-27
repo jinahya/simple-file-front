@@ -371,31 +371,31 @@ public abstract class AbstractLocatorsResource {
 
         final Object[] sourceObject_ = new Object[1];
         fileContext.sourceObjectConsumer(sourceObject -> {
-            logger.trace("source object: {}", sourceObject);
+            logger.trace("consuming source object: {}", sourceObject);
             sourceObject_[0] = sourceObject;
         });
 
         final Long[] sourceCopied_ = new Long[1];
         fileContext.sourceCopiedConsumer(sourceCopied -> {
-            logger.trace("source copied: {}", sourceCopied);
+            logger.trace("consuming source copied: {}", sourceCopied);
             sourceCopied_[0] = sourceCopied;
         });
 
         final Object[] targetObject_ = new Object[1];
         fileContext.targetObjectConsumer(targetObject -> {
-            logger.trace("target object: {}", targetObject);
+            logger.trace("consuming target object: {}", targetObject);
             targetObject_[0] = targetObject;
         });
 
         final Long[] targetCopied_ = new Long[1];
         fileContext.targetCopiedConsumer(targetCopied -> {
-            logger.trace("target copied: {}", targetCopied);
+            logger.trace("consuming target copied: {}", targetCopied);
             targetCopied_[0] = targetCopied;
         });
 
         final String[] pathName_ = new String[1];
         fileContext.pathNameConsumer(pathName -> {
-            logger.trace("path name: {}", pathName);
+            logger.trace("consuming path name: {}", pathName);
             pathName_[0] = pathName;
         });
 
